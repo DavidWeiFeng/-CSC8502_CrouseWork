@@ -1,0 +1,50 @@
+CSC8502 Coursework: Real Time Graphics Demo
+Deadline: Refer to the assignment item on NESS for the exact date/time. Demonstrations will take place in the game lab from 11:00 a.m. on Friday, November 14th.
+
+Module Leader: Rich Davison · Contact: Richard-Gordon.Davison@newcastle.ac.uk 
+
+This page has been aligned to the University’s Assessment, Feedback and Marking Policy (effective 2025). The brief, submission rules, AI expectations, and feedback timelines are explicitly stated below. The essence, tasks, marking scheme, learning outcomes, and dates are unchanged.
+
+Assessment Brief
+You are to develop a program using C++ and OpenGL that renders a scene, that transitions between two different time periods. The exact context in which this takes place is up to you, but the end result should be a consistent looking graphical scene. The time jump should be represented by a full screen effect, after which the new scene, at a different time period is shown. The new scene should be recognisably the same place but at a different time. The scale of the time jump is up to you – for example, it could be 1000 years, or 6 months. A simple transition from day to night is not sufficient.
+
+Common to such scenes are large terrains, a sky with visible moving sun. You should consider how scene management and rendering of transparent objects could help with the correct and efficient rendering of the scene, and how vertex shaders and skeletal animation can help with creating realistic looking moving content. Think about ways in which the concepts you have learned during this module could be applied to create a dynamic day / night cycle or changes in weather condition over time.
+
+Your planet surface landscape can be represented as a large heightmap, and should use additional meshes (loaded from file or procedurally generated) to represent the rocks, trees, and whatever other items you wish to include in your scene. The camera should automatically follow a preset ‘track’ around your environment that shows off the features you have implemented, unless the user presses a specific key that should allow a ‘free’ camera.
+
+The following video should provide some inspiration on what features could possibly be replicated in your program:
+
+https://www.youtube.com/watch?v=urBRxLI6SFILinks to an external site.
+
+
+The coursework is divided into two sections. The first section is to use the knowledge gained from the tutorial series to develop a program containing some core rendering features, including an animated environment and an automatically moving camera.
+
+For the second section, you have more free reign to demonstrate your understanding of rendering techniques by integrating a number of advanced features to enhance the graphical scene created in the first section.
+
+You may use the material provided to you in graphical tutorial series, and are recommended to use this as your starting point. Marks can be gained by showing a good working knowledge of the tutorial material, as well as by moving beyond it by researching and implementing more advanced graphical techniques, and novel ways in which the techniques discussed in the module could be combined for enhanced graphical fidelity. You will not lose marks for using textures and models from external sources, but remember to reference and attribute them as appropriate.
+
+Coursework Core Features:
+
+You must implement the following set of basic features:
+
+The scene must include a landscape of some form, rendered such that at least one texture is used in the fragment shader.
+Part of the scene must be lit using at least one light source, including calculations for ambient, diffuse and specular components.
+Part of the scene must show use of environment mapping.
+The camera should initially move automatically through the scene.
+The scene should be controlled via an overall scene graph for efficient rendering.
+Appropriate usage of simple meshes and textures to combine into additional scene elements.
+ 
+
+Coursework Advanced Features:
+
+You are free to develop your own advanced ideas for enhancing the visuals of the coursework – you are not limited to this example list. Ask if you are unsure about the suitability of your idea, or want hints on how your idea could be achieved. The more complex, and well-engineered an effect is, the higher the mark that will be awarded.
+
+Post processing effects: Blurring, colour correction, lens flare, HDR bloom effects etc. These may be applied to specific parts of the camera track, or optionally via keypresses.
+Advanced Lighting: Inclusion of new light calculations such as spot lights, projective lighting, or alternate methods of calculating the contribution of a large number of lights.
+Shadowing: Part of the scene must demonstrate the use of real time shadowing techniques. Use of multiple shadow maps, cascaded shadow maps, or omnidirectional shadow maps via cube mapping are considered more technically advanced.
+Multiple viewpoints simultaneously using a split screen effect.
+Animated objects (skeletal animation, a progressively evolving tree mesh, grass waving in the wind).
+Environmental effects such as rain, the atmosphere, lightning strikes, or fire.
+Deliverable Items – NESS Submission
+Source code and clean Visual Studio solution. Zip your work folder, minus the .vs and .git folders, if present.
+A document containing at least four screenshots with descriptions, a list of any key/mouse presses that perform actions, and a link to a YouTube video of your coursework

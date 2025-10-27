@@ -1,0 +1,124 @@
+#include "Texture.h"
+#include <iostream>
+
+// 定义 STB_IMAGE 实现
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+// 构造函数
+Texture::Texture(const std::string& path, bool generateMipmap)
+    : m_TextureID(0), m_Width(0), m_Height(0), m_Channels(0), m_FilePath(path)
+{
+    if (!LoadFromFile(path, generateMipmap))
+    {
+        std::cerr << "错误：纹理加载失败: " << path << std::endl;
+    }
+}
+
+// 析构函数
+Texture::~Texture()
+{
+    if (m_TextureID != 0)
+    {
+        glDeleteTextures(1, &m_TextureID);
+    }
+}
+
+// 绑定纹理
+void Texture::Bind(unsigned int unit) const
+{
+    // 激活纹理单元
+    glActiveTexture(GL_TEXTURE0 + unit);
+    // 绑定纹理
+    glBindTexture(GL_TEXTURE_2D, m_TextureID);
+}
+
+// 解绑纹理
+void Texture::Unbind() const
+{
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+// 从文件加载纹理
+bool Texture::LoadFromFile(const std::string& path, bool generateMipmap)
+{
+    // STB_image 默认加载图像时y轴是反的，需要翻转
+    stbi_set_flip_vertically_on_load(true);
+
+    // 加载图像（保持原始格式）
+    unsigned char* data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_Channels, 0);
+
+    if (!data)
+    {
+        std::cerr << "错误：STB无法加载图像: " << path << std::endl;
+        std::cerr << "STB错误信息: " << stbi_failure_reason() << std::endl;
+        return false;
+    }
+
+    std::cout << "成功加载纹理: " << path << std::endl;
+    std::cout << "  尺寸: " << m_Width << "x" << m_Height << std::endl;
+    std::cout << "  通道数: " << m_Channels << std::endl;
+
+    // 生成OpenGL纹理
+    glGenTextures(1, &m_TextureID);
+    glBindTexture(GL_TEXTURE_2D, m_TextureID);
+
+    // 设置纹理参数
+    // 纹理环绕方式（Wrapping）
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // 纹理过滤方式（Filtering）
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generateMipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 根据通道数选择格式
+    GLenum internalFormat;
+    GLenum dataFormat;
+
+    // 设置像素对齐（对于RGB非常重要！）
+    if (m_Channels == 3)
+    {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // RGB需要1字节对齐
+        internalFormat = GL_RGB;
+        dataFormat = GL_RGB;
+    }
+    else if (m_Channels == 4)
+    {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // RGBA使用4字节对齐
+        internalFormat = GL_RGBA;
+        dataFormat = GL_RGBA;
+    }
+    else if (m_Channels == 1)
+    {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        internalFormat = GL_RED;
+        dataFormat = GL_RED;
+    }
+    else
+    {
+        std::cerr << "错误：不支持的通道数: " << m_Channels << std::endl;
+        stbi_image_free(data);
+        return false;
+    }
+
+    std::cout << "  使用格式: " << (m_Channels == 3 ? "RGB" : (m_Channels == 4 ? "RGBA" : "RED")) << std::endl;
+
+    // 上传纹理数据到GPU
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+
+    // 生成Mipmap
+    if (generateMipmap)
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "  Mipmap已生成" << std::endl;
+    }
+
+    // 释放图像数据
+    stbi_image_free(data);
+
+    // 解绑纹理
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return true;
+}

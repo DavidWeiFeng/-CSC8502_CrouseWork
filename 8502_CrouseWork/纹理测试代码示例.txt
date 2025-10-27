@@ -1,0 +1,111 @@
+// ===== 纹理测试代码示例 =====
+// 将以下代码添加到 main.cpp 中测试纹理系统
+
+// 1. 在文件顶部添加 include
+#include "Texture.h"
+
+// 2. 在 main() 函数中，加载着色器后添加：
+
+// 加载纹理着色器
+Shader textureShader("Shaders/textureVertex.glsl", "Shaders/textureFragment.glsl");
+
+// 加载测试纹理
+Texture testTexture("Textures/test.png");
+
+if (!testTexture.IsLoaded())
+{
+    std::cerr << "警告：纹理加载失败，将使用纯色渲染" << std::endl;
+}
+
+// 3. 修改立方体顶点数据，添加纹理坐标：
+
+float verticesWithTexture[] = {
+    // 位置              // 颜色            // 纹理坐标
+    // 后面
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.5f, 0.0f, 0.0f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.5f, 0.0f, 0.0f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.5f, 0.0f, 0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.0f, 0.0f,  0.0f, 0.0f,
+
+    // 前面
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.5f, 0.0f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.5f, 0.0f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f, 0.5f, 0.0f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f, 0.5f, 0.0f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.5f, 0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.5f, 0.0f,  0.0f, 0.0f,
+
+    // 左面
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.5f,  1.0f, 0.0f,
+
+    // 右面
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.0f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.5f, 0.5f, 0.0f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.5f, 0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.5f, 0.5f, 0.0f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.0f,  1.0f, 0.0f,
+
+    // 底面
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.0f, 0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.5f, 0.0f, 0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.5f, 0.0f, 0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.5f, 0.0f, 0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.5f, 0.0f, 0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.5f, 0.0f, 0.5f,  0.0f, 1.0f,
+
+    // 顶面
+    -0.5f,  0.5f, -0.5f,  0.0f, 0.5f, 0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f, 0.5f, 0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f, 0.5f, 0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f, 0.5f, 0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.5f, 0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 0.5f, 0.5f,  0.0f, 1.0f
+};
+
+// 4. 修改顶点属性配置（每个顶点现在有8个float：3位置+3颜色+2纹理坐标）
+
+// 位置属性
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+
+// 颜色属性
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+glEnableVertexAttribArray(1);
+
+// 纹理坐标属性
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+glEnableVertexAttribArray(2);
+
+// 5. 在渲染循环中，使用纹理着色器：
+
+// 使用纹理着色器
+textureShader.Use();
+
+// 绑定纹理
+testTexture.Bind(0);  // 绑定到纹理单元0
+
+// 设置uniform变量
+textureShader.SetInt("textureSampler", 0);      // 纹理单元0
+textureShader.SetBool("useTexture", true);      // 使用纹理
+
+// 传递矩阵
+textureShader.SetMat4("model", model);
+textureShader.SetMat4("view", view);
+textureShader.SetMat4("projection", projection);
+
+// 绘制立方体
+glBindVertexArray(VAO);
+glDrawArrays(GL_TRIANGLES, 0, 36);
+glBindVertexArray(0);
+
+// ===== 完整版测试说明 =====
+// 如果你想要一个完整的测试版本，我可以为你创建一个新的 main_texture_test.cpp 文件
+// 或者直接修改现有的 main.cpp
