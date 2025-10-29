@@ -1,4 +1,4 @@
-﻿#ifndef CAMERA_H
+#ifndef CAMERA_H
 #define CAMERA_H
 
 #include <glad/glad.h>
@@ -18,7 +18,7 @@ enum CameraMovement {
 // 默认相机参数
 const float YAW = -90.0f;           // 偏航角（左右看）
 const float PITCH = 0.0f;           // 俯仰角（上下看）
-const float SPEED = 50.0f;           // 移动速度
+const float SPEED = 20.0f;           // 移动速度
 const float SENSITIVITY = 0.1f;     // 鼠标灵敏度
 const float ZOOM = 45.0f;           // 视野角度
 

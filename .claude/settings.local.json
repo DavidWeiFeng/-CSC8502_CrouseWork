@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dir:*)",
       "Bash(rmdir:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(msbuild:*)"
     ],
     "deny": [],
     "ask": []

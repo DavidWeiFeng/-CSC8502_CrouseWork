@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -8,9 +8,9 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Texture.h"
-#include "Terrain.h"  // ← 地形类
-#include "Skybox.h"   // ← 天空盒类
-// #include "Water.h"    // ← 水面类（暂时禁用）
+#include "Terrain.h"     // ← 地形类
+#include "Skybox.h"      // ← 天空盒类
+#include "WaterPlane.h"  // ← 水面类
 #include <windows.h>
 
 // ========================================
@@ -25,7 +25,7 @@ const int WINDOW_HEIGHT = 720;
 // 修改初始位置：
 // - 提高高度（y=50）以便俯视地形
 // - 向前移动（z=50）以便看到整个地形
-Camera camera(glm::vec3(50.0f, 50.0f, 100.0f));
+Camera camera(glm::vec3(20.0f, 0.0f, 40.0f));
 
 // ========================================
 // 时间变量
@@ -181,8 +181,7 @@ int main()
     }
     std::cout << "✓ 天空盒着色器加载成功" << std::endl;
 
-    // 水面着色器（暂时禁用）
-    /*
+    // 水面着色器
     Shader waterShader("Shaders/waterVertex.glsl", "Shaders/waterFragment.glsl");
     if (waterShader.GetProgram() == 0)
     {
@@ -190,7 +189,6 @@ int main()
         return -1;
     }
     std::cout << "✓ 水面着色器加载成功" << std::endl;
-    */
 
     // ========================================
     // 步骤5：加载地形纹理
@@ -223,7 +221,7 @@ int main()
     // 参数说明：
     //   "Textures/heightmap.png" - 高度图路径
     //   100.0f - 地形大小（世界坐标单位）
-    //   15.0f  - 高度缩放（数值越大，山峰越高）
+    //   20.0f  - 高度缩放（降低以配合水面，范围约-10到+10）
     Texture heightmapTest("Textures/heightmap.png");
     if (!heightmapTest.IsLoaded())
     {
@@ -242,7 +240,7 @@ int main()
         return -1;
     }
 
-    Terrain terrain("Textures/heightmap.png", 100.0f, 30.0f);
+    Terrain terrain("Textures/heightmap.png", 100.0f, 5.0f);
     // terrain对象创建时会自动打印详细的创建过程
 
     // ========================================
@@ -267,20 +265,20 @@ int main()
     std::cout << "✓ 天空盒创建完成" << std::endl;
 
     // ========================================
-    // 步骤8：创建水面（暂时禁用）
+    // 步骤8：创建水面
     // ========================================
-    /*
     std::cout << "\n正在创建水面..." << std::endl;
 
     // 水面参数：
-    //   位置：(0, 12, 0) - 在地形中等高度（地形高度范围0-30）
-    //   大小：100.0f - 覆盖整个地形（与地形大小相同）
-    glm::vec3 waterPosition(0.0f, 12.0f, 0.0f);  // 水面高度12
-    float waterSize = 100.0f;                     // 水面大小100x100
+    //   水面高度：0.0f - 与地形偏移对齐（地形高度范围 -10 到 +10）
+    //   水面大小：100.0f - 覆盖整个地形（与地形大小相同）
+    //   网格分辨率：100 - 足够细分以显示波浪效果
+    float waterLevel = 0.0f;      // 水面高度（Y坐标）
+    float waterSize = 100.0f;     // 水面大小
+    int waterResolution = 100;    // 网格分辨率
 
-    Water water(waterPosition, waterSize);
+    WaterPlane waterPlane(waterLevel, waterSize, waterResolution);
     std::cout << "✓ 水面创建完成" << std::endl;
-    */
 
     // ========================================
     // 步骤9：设置光照参数
@@ -387,25 +385,28 @@ int main()
         terrain.Render();
 
         // ────────────────────────────────────
-        // 10. 渲染水面（暂时禁用）
+        // 10. 渲染水面（反射水面）
         // ────────────────────────────────────
-        /*
         // 激活水面着色器
         waterShader.Use();
 
-        // 设置变换矩阵（与地形相同）
+        // 设置变换矩阵
         waterShader.SetMat4("model", model);
         waterShader.SetMat4("view", view);
         waterShader.SetMat4("projection", projection);
 
-        // 设置光照参数
-        waterShader.SetVec3("lightPos", lightPos);
-        waterShader.SetVec3("lightColor", lightColor);
+        // 设置水面参数
         waterShader.SetVec3("viewPos", camera.Position);
+        waterShader.SetFloat("time", (float)glfwGetTime());
+        waterShader.SetVec3("waterColor", glm::vec3(0.1f, 0.3f, 0.5f));  // 深海蓝
+
+        // 绑定天空盒立方体贴图（用于反射）
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.GetCubemapID());
+        waterShader.SetInt("skybox", 0);
 
         // 渲染水面
-        water.Render();
-        */
+        waterPlane.Render();
 
         // ────────────────────────────────────
         // 11. 渲染天空盒（最后渲染）

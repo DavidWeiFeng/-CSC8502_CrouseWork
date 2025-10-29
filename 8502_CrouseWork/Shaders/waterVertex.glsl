@@ -11,8 +11,9 @@ layout (location = 2) in vec2 aTexCoord;  // 纹理坐标
 // 输出：传递给片段着色器的数据
 // ========================================
 out vec3 FragPos;    // 片段的世界空间位置
-out vec3 Normal;     // 法向量（世界空间）
+out vec3 Normal;     // 法向量（世界空间，扰动后）
 out vec2 TexCoord;   // 纹理坐标
+out vec3 ViewDir;    // 视线方向（从片段指向相机）
 
 // ========================================
 // Uniform变量：变换矩阵
@@ -20,33 +21,63 @@ out vec2 TexCoord;   // 纹理坐标
 uniform mat4 model;       // 模型矩阵
 uniform mat4 view;        // 视图矩阵
 uniform mat4 projection;  // 投影矩阵
+uniform vec3 viewPos;     // 相机位置（世界空间）
+uniform float time;       // 时间（用于波浪动画）
 
 void main()
 {
     // ========================================
-    // 1. 计算片段的世界空间位置
+    // 1. 计算动态波浪
     // ========================================
-    // 将顶点位置从模型空间变换到世界空间
-    FragPos = vec3(model * vec4(aPos, 1.0));
+    // 使用多个正弦波叠加创建复杂的水面波动
+    vec3 pos = aPos;
+
+    // 波浪1：主波浪（X方向）
+    float wave1 = sin(pos.x * 0.3 + time * 0.5) * 0.2;
+
+    // 波浪2：次波浪（Z方向）
+    float wave2 = cos(pos.z * 0.4 + time * 0.6) * 0.15;
+
+    // 波浪3：对角线波浪
+    float wave3 = sin((pos.x + pos.z) * 0.2 + time * 0.4) * 0.1;
+
+    // 波浪4：细节波浪
+    float wave4 = cos(pos.x * 0.8 - time * 0.3) * 0.05;
+
+    // 叠加所有波浪
+    pos.y += wave1 + wave2 + wave3 + wave4;
 
     // ========================================
-    // 2. 变换法向量到世界空间
+    // 2. 计算扰动后的法向量（近似方法）
     // ========================================
-    // 注意：对于非均匀缩放，应该使用法线矩阵 (transpose(inverse(model)))
-    // 但对于水面这种简单的平面，直接使用model矩阵就可以
-    // 水面的法向量始终是 (0, 1, 0)，指向上方
-    Normal = mat3(model) * aNormal;
+    vec3 normal = aNormal;
+
+    // 根据波浪计算法向量X分量扰动
+    normal.x += cos(pos.x * 0.3 + time * 0.5) * 0.3 * 0.2;
+    normal.x += sin(pos.x * 0.8 - time * 0.3) * 0.8 * 0.05;
+
+    // 根据波浪计算法向量Z分量扰动
+    normal.z += sin(pos.z * 0.4 + time * 0.6) * 0.4 * 0.15;
+
+    // 归一化法向量
+    normal = normalize(normal);
 
     // ========================================
-    // 3. 传递纹理坐标
+    // 3. 变换到世界空间
     // ========================================
+    FragPos = vec3(model * vec4(pos, 1.0));
+    Normal = mat3(transpose(inverse(model))) * normal;
     TexCoord = aTexCoord;
 
     // ========================================
-    // 4. 计算最终的顶点位置（裁剪空间）
+    // 4. 计算视线方向
     // ========================================
-    // 完整的MVP变换：projection * view * model * position
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    ViewDir = viewPos - FragPos;
+
+    // ========================================
+    // 5. 计算最终顶点位置（裁剪空间）
+    // ========================================
+    gl_Position = projection * view * vec4(FragPos, 1.0);
 }
 
 // ========================================

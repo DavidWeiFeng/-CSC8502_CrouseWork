@@ -6,6 +6,7 @@
 in vec3 FragPos;        // 片段的世界空间位置
 in vec3 Normal;         // 法向量（世界空间）
 in vec2 TexCoord;       // 纹理坐标
+in vec3 ViewDir;        // 视线方向
 
 // ========================================
 // 输出：片段的最终颜色
@@ -13,85 +14,67 @@ in vec2 TexCoord;       // 纹理坐标
 out vec4 FragColor;
 
 // ========================================
-// Uniform变量：光照参数
+// Uniform变量
 // ========================================
-uniform vec3 lightPos;      // 光源位置（世界空间）
-uniform vec3 lightColor;    // 光源颜色
-uniform vec3 viewPos;       // 相机位置（世界空间）
+uniform samplerCube skybox;   // 天空盒立方体贴图
+uniform vec3 waterColor;      // 水的基础颜色
+uniform float time;           // 时间（可用于额外效果）
 
 void main()
 {
     // ========================================
-    // 1. 水的基础颜色
-    // ========================================
-    // 使用浅蓝色作为水的基础颜色
-    // 可以根据需要调整RGB值
-    vec3 waterColor = vec3(0.1, 0.3, 0.5);  // 深蓝色水
-    // vec3 waterColor = vec3(0.2, 0.5, 0.7);  // 浅蓝色水
-    // vec3 waterColor = vec3(0.0, 0.4, 0.6);  // 海洋蓝
-
-    // ========================================
-    // 2. 归一化向量
+    // 1. 归一化向量
     // ========================================
     vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 viewDir = normalize(ViewDir);
 
     // ========================================
-    // 3. 环境光（Ambient）
+    // 2. 计算反射向量并采样天空盒
     // ========================================
-    // 水面的环境光可以稍高一些，模拟天空的反射
-    float ambientStrength = 0.3;
-    vec3 ambient = ambientStrength * lightColor;
+    // reflect函数：计算入射光线的反射方向
+    // 参数1：入射方向（从相机指向片段，所以是 -viewDir）
+    // 参数2：表面法向量
+    vec3 reflectDir = reflect(-viewDir, norm);
 
-    // ========================================
-    // 4. 漫反射（Diffuse）
-    // ========================================
-    // 水面的漫反射较弱，因为水主要靠反射而不是散射
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor * 0.4;  // 乘以0.4降低漫反射强度
+    // 采样天空盒立方体贴图
+    // 使用反射方向作为纹理坐标
+    vec3 reflectionColor = texture(skybox, reflectDir).rgb;
 
     // ========================================
-    // 5. 镜面反射（Specular）- 重点！
+    // 3. 计算菲涅尔效应（Fresnel Effect）
     // ========================================
-    // 水面是光滑表面，镜面反射非常强
-
-    // 5.1 镜面反射强度 - 水面反射强度高
-    float specularStrength = 0.8;  // 0.8-1.0 表示非常光滑的表面
-
-    // 5.2 计算反射方向
-    vec3 reflectDir = reflect(-lightDir, norm);
-
-    // 5.3 计算镜面反射系数
-    // shininess = 128：非常锐利的高光，模拟光滑水面
-    // 可以尝试：
-    //   - 64：略微柔和的高光
-    //   - 128：标准水面高光
-    //   - 256：非常锐利的高光（类似镜子）
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 128);
-
-    // 5.4 计算最终镜面反射光
-    vec3 specular = specularStrength * spec * lightColor;
+    // 菲涅尔效应：
+    // - 从正上方看水面：更透明，看到水的颜色
+    // - 从侧面看水面：更反射，看到天空倒影
+    //
+    // 使用Schlick近似：
+    // fresnel = (1 - cos(θ))^n
+    // 其中 θ 是视线与法向量的夹角
+    float cosTheta = max(dot(viewDir, norm), 0.0);
+    float fresnel = pow(1.0 - cosTheta, 3.0);  // 指数3.0可调节效果强度
 
     // ========================================
-    // 6. 组合所有光照分量
+    // 4. 混合反射色和水的基础色
     // ========================================
-    // Phong光照模型：环境光 + 漫反射 + 镜面反射
-    vec3 lighting = ambient + diffuse + specular;
-
-    // 将光照应用到水的基础颜色
-    vec3 result = lighting * waterColor;
+    // 使用菲涅尔系数在反射和基础色之间插值
+    // fresnel = 0 （正上方）→ 更多基础色
+    // fresnel = 1 （侧面）  → 更多反射色
+    vec3 baseColor = waterColor;  // 水的基础颜色
+    vec3 finalColor = mix(baseColor, reflectionColor, fresnel * 0.7);
+    // 乘以0.7是为了不让反射过于强烈，保留一些水的颜色
 
     // ========================================
-    // 7. 输出最终颜色（带透明度）
+    // 5. 根据观察角度调整透明度
     // ========================================
-    // Alpha值：0.0 = 完全透明，1.0 = 完全不透明
-    // 水面可以设置为半透明，这样可以看到下方的地形
-    float alpha = 0.6;  // 半透明水面
-    // float alpha = 0.8;  // 较不透明的水面
-    // float alpha = 1.0;  // 完全不透明
+    // 从上往下看：较透明（能看到水下地形）
+    // 从侧面看：较不透明（水面反射更明显）
+    float alpha = 0.6 + fresnel * 0.3;
+    // 基础透明度0.6，侧面增加到0.9
 
-    FragColor = vec4(result, alpha);
+    // ========================================
+    // 6. 输出最终颜色
+    // ========================================
+    FragColor = vec4(finalColor, alpha);
 }
 
 // ========================================

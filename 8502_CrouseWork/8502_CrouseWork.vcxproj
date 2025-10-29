@@ -143,7 +143,7 @@
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="Water.cpp" />
+    <ClCompile Include="WaterPlane.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -152,7 +152,7 @@
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
-    <ClInclude Include="Water.h" />
+    <ClInclude Include="WaterPlane.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>

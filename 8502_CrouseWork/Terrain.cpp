@@ -189,6 +189,7 @@ void Terrain::GenerateVertices()
             float posX = x * cellSizeX;
 
             // Y坐标（高度）：从高度图读取，乘以缩放系数
+            // 不使用偏移量，让地形从Y=0开始
             float posY = GetHeight(x, z) * m_HeightScale;
 
             // Z坐标：从0到terrainSize，均匀分布
