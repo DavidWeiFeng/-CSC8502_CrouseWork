@@ -36,6 +36,9 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Water.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -56,6 +59,9 @@
     <ClInclude Include="Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Water.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -69,5 +75,7 @@
     <None Include="Shaders\terrainVertex.glsl" />
     <None Include="Shaders\textureFragment.glsl" />
     <None Include="Shaders\textureVertex.glsl" />
+    <None Include="Shaders\waterFragment.glsl" />
+    <None Include="Shaders\waterVertex.glsl" />
   </ItemGroup>
 </Project>

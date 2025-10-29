@@ -119,6 +119,11 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
+    // 重要：立方体贴图不需要翻转Y轴
+    // 因为Texture.cpp中设置了stbi_set_flip_vertically_on_load(true)
+    // 我们需要临时禁用它
+    stbi_set_flip_vertically_on_load(false);
+
     // 加载6张纹理到立方体贴图的6个面
     int width, height, nrChannels;
     for (unsigned int i = 0; i < faces.size(); i++) {
@@ -167,6 +172,9 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    // 恢复翻转设置（用于普通2D纹理）
+    stbi_set_flip_vertically_on_load(true);
 
     return textureID;
 }

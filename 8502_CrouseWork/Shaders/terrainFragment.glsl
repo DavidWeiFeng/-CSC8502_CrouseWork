@@ -74,15 +74,48 @@ void main()
     vec3 diffuse = diff * lightColor;
 
     // ========================================
-    // 4. 组合所有光照分量
+    // 4. 镜面反射光（Specular）- 新增！
     // ========================================
-    // 最终光照 = 环境光 + 漫反射光
-    // 然后乘以纹理颜色，得到最终颜色
-    vec3 lighting = ambient + diffuse;
+    // 镜面反射：模拟光滑表面的高光效果
+    // 取决于视线方向和反射方向的夹角
+
+    // 4.1 镜面反射强度
+    // 对于草地/泥土这种粗糙表面，设置较低的值
+    // 范围：0.0（完全不反射）到 1.0（完全反射）
+    float specularStrength = 0.2;
+
+    // 4.2 计算视线方向（从片段指向相机）
+    vec3 viewDir = normalize(viewPos - FragPos);
+
+    // 4.3 计算反射方向
+    // reflect() 函数：计算光线关于法向量的反射方向
+    // 注意：第一个参数是入射方向（指向表面），所以需要对lightDir取反
+    vec3 reflectDir = reflect(-lightDir, norm);
+
+    // 4.4 计算镜面反射系数
+    // dot(viewDir, reflectDir)：视线方向与反射方向的点积
+    //   - 如果视线方向和反射方向一致：dot = 1.0（看到最强高光）
+    //   - 如果不一致：dot < 1.0（高光减弱）
+    //   - 如果相反：dot < 0（用max截断为0）
+    // pow(..., 32)：32是光泽度（shininess）参数
+    //   - 值越大，高光越锐利、越集中
+    //   - 值越小，高光越分散、越模糊
+    //   - 32适合半光滑表面（如湿润的地面）
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+
+    // 4.5 计算最终镜面反射光
+    vec3 specular = specularStrength * spec * lightColor;
+
+    // ========================================
+    // 5. 组合所有光照分量
+    // ========================================
+    // 最终光照 = 环境光 + 漫反射光 + 镜面反射光
+    // 这就是完整的Phong光照模型！
+    vec3 lighting = ambient + diffuse + specular;
     vec3 result = lighting * texColor;
 
     // ========================================
-    // 5. 输出最终颜色
+    // 6. 输出最终颜色
     // ========================================
     // vec4(result, 1.0)：RGB + Alpha（不透明度=1.0）
     FragColor = vec4(result, 1.0);
@@ -91,23 +124,34 @@ void main()
 // ========================================
 // 补充说明：
 // ========================================
-// 这个着色器实现了简化的Phong光照模型（不含镜面反射）
+// 这个着色器实现了完整的Phong光照模型！
 //
-// 完整的Phong模型包括：
-//   1. 环境光（Ambient）  - 已实现 ✓
-//   2. 漫反射（Diffuse）  - 已实现 ✓
-//   3. 镜面反射（Specular）- 未实现（可以后续添加）
+// Phong光照模型的三个分量：
+//   1. 环境光（Ambient）   - ✅ 已实现
+//   2. 漫反射（Diffuse）   - ✅ 已实现
+//   3. 镜面反射（Specular） - ✅ 已实现
 //
-// 镜面反射效果：
-//   - 模拟光滑表面的高光（如水面、金属）
-//   - 地形通常是粗糙的，所以暂时不需要镜面反射
-//   - 如果需要，可以添加以下代码：
+// 当前参数设置（针对草地/泥土地形）：
+//   - ambientStrength = 0.15   (较低的基础亮度)
+//   - specularStrength = 0.2    (较低的反射强度，因为地形粗糙)
+//   - shininess = 32            (中等光泽度)
 //
-//   float specularStrength = 0.1;
-//   vec3 viewDir = normalize(viewPos - FragPos);
-//   vec3 reflectDir = reflect(-lightDir, norm);
-//   float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-//   vec3 specular = specularStrength * spec * lightColor;
+// 参数调整建议：
+//   - 如果高光太强：降低 specularStrength (如 0.1)
+//   - 如果高光太弱：提高 specularStrength (如 0.3-0.5)
+//   - 如果高光太分散：提高 shininess (如 64)
+//   - 如果高光太锐利：降低 shininess (如 16)
 //
-//   然后在lighting中加上specular即可
+// 不同材质的推荐参数：
+//   草地/泥土：strength=0.1-0.2, shininess=8-16
+//   湿润地面：strength=0.2-0.3, shininess=32-64
+//   岩石：    strength=0.2-0.3, shininess=16-32
+//   雪地：    strength=0.3-0.5, shininess=32-64
+//   水面：    strength=0.8-1.0, shininess=128-256
+//
+// 如何观察镜面反射效果：
+//   1. 调整相机视角，找到能看到高光的位置
+//   2. 高光通常出现在地形的倾斜面上
+//   3. 相机、表面、光源三者角度合适时最明显
+//   4. 在地形上可能比较微弱，水面上会非常明显
 // ========================================

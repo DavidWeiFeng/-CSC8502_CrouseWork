@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "Terrain.h"  // ← 地形类
 #include "Skybox.h"   // ← 天空盒类
+// #include "Water.h"    // ← 水面类（暂时禁用）
 #include <windows.h>
 
 // ========================================
@@ -140,6 +141,14 @@ int main()
     std::cout << "✓ 背面剔除已禁用（双面渲染）" << std::endl;
 
     // ========================================
+    // 启用混合（支持半透明）
+    // ========================================
+    // 水面需要半透明效果，必须启用混合
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    std::cout << "✓ 混合已启用（支持半透明）" << std::endl;
+
+    // ========================================
     // 步骤3：设置鼠标回调
     // ========================================
     glfwSetCursorPosCallback(window.GetGLFWWindow(), mouse_callback);
@@ -171,6 +180,17 @@ int main()
         return -1;
     }
     std::cout << "✓ 天空盒着色器加载成功" << std::endl;
+
+    // 水面着色器（暂时禁用）
+    /*
+    Shader waterShader("Shaders/waterVertex.glsl", "Shaders/waterFragment.glsl");
+    if (waterShader.GetProgram() == 0)
+    {
+        std::cerr << "错误：水面着色器加载失败！" << std::endl;
+        return -1;
+    }
+    std::cout << "✓ 水面着色器加载成功" << std::endl;
+    */
 
     // ========================================
     // 步骤5：加载地形纹理
@@ -227,7 +247,7 @@ int main()
 
     // ========================================
     // 步骤7：创建天空盒
-    // ========================================
+      // ========================================
     std::cout << "\n正在加载天空盒..." << std::endl;
 
     // 天空盒纹理路径（6张图：右、左、上、下、前、后）
@@ -247,7 +267,23 @@ int main()
     std::cout << "✓ 天空盒创建完成" << std::endl;
 
     // ========================================
-    // 步骤8：设置光照参数
+    // 步骤8：创建水面（暂时禁用）
+    // ========================================
+    /*
+    std::cout << "\n正在创建水面..." << std::endl;
+
+    // 水面参数：
+    //   位置：(0, 12, 0) - 在地形中等高度（地形高度范围0-30）
+    //   大小：100.0f - 覆盖整个地形（与地形大小相同）
+    glm::vec3 waterPosition(0.0f, 12.0f, 0.0f);  // 水面高度12
+    float waterSize = 100.0f;                     // 水面大小100x100
+
+    Water water(waterPosition, waterSize);
+    std::cout << "✓ 水面创建完成" << std::endl;
+    */
+
+    // ========================================
+    // 步骤9：设置光照参数
     // ========================================
     // 光源位置：从侧面上方照射（制造更明显的阴影）
     // 之前：(50, 80, 50) - 在正上方，阴影不明显
@@ -351,7 +387,28 @@ int main()
         terrain.Render();
 
         // ────────────────────────────────────
-        // 10. 渲染天空盒（最后渲染）
+        // 10. 渲染水面（暂时禁用）
+        // ────────────────────────────────────
+        /*
+        // 激活水面着色器
+        waterShader.Use();
+
+        // 设置变换矩阵（与地形相同）
+        waterShader.SetMat4("model", model);
+        waterShader.SetMat4("view", view);
+        waterShader.SetMat4("projection", projection);
+
+        // 设置光照参数
+        waterShader.SetVec3("lightPos", lightPos);
+        waterShader.SetVec3("lightColor", lightColor);
+        waterShader.SetVec3("viewPos", camera.Position);
+
+        // 渲染水面
+        water.Render();
+        */
+
+        // ────────────────────────────────────
+        // 11. 渲染天空盒（最后渲染）
         // ────────────────────────────────────
         // 修改深度测试函数，允许深度值为1.0通过
         // 天空盒的深度值永远是1.0（最远），需要GL_LEQUAL
@@ -360,7 +417,7 @@ int main()
         glDepthFunc(GL_LESS);  // 恢复默认深度测试
 
         // ────────────────────────────────────
-        // 11. 交换缓冲
+        // 12. 交换缓冲
         // ────────────────────────────────────
         window.SwapBuffers();
     }
