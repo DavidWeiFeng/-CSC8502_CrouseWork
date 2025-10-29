@@ -32,17 +32,17 @@ void main()
     // 使用多个正弦波叠加创建复杂的水面波动
     vec3 pos = aPos;
 
-    // 波浪1：主波浪（X方向）
-    float wave1 = sin(pos.x * 0.3 + time * 0.5) * 0.2;
+    // 波浪1：主波浪（X方向）- 减小振幅让水面更平静
+    float wave1 = sin(pos.x * 0.3 + time * 0.3) * 0.05;
 
-    // 波浪2：次波浪（Z方向）
-    float wave2 = cos(pos.z * 0.4 + time * 0.6) * 0.15;
+    // 波浪2：次波浪（Z方向）- 减小振幅
+    float wave2 = cos(pos.z * 0.4 + time * 0.4) * 0.04;
 
-    // 波浪3：对角线波浪
-    float wave3 = sin((pos.x + pos.z) * 0.2 + time * 0.4) * 0.1;
+    // 波浪3：对角线波浪 - 减小振幅
+    float wave3 = sin((pos.x + pos.z) * 0.2 + time * 0.25) * 0.03;
 
-    // 波浪4：细节波浪
-    float wave4 = cos(pos.x * 0.8 - time * 0.3) * 0.05;
+    // 波浪4：细节波浪 - 减小振幅和速度
+    float wave4 = cos(pos.x * 0.8 - time * 0.2) * 0.02;
 
     // 叠加所有波浪
     pos.y += wave1 + wave2 + wave3 + wave4;
@@ -52,12 +52,12 @@ void main()
     // ========================================
     vec3 normal = aNormal;
 
-    // 根据波浪计算法向量X分量扰动
-    normal.x += cos(pos.x * 0.3 + time * 0.5) * 0.3 * 0.2;
-    normal.x += sin(pos.x * 0.8 - time * 0.3) * 0.8 * 0.05;
+    // 根据波浪计算法向量X分量扰动 - 减小扰动强度
+    normal.x += cos(pos.x * 0.3 + time * 0.3) * 0.3 * 0.05;
+    normal.x += sin(pos.x * 0.8 - time * 0.2) * 0.8 * 0.02;
 
-    // 根据波浪计算法向量Z分量扰动
-    normal.z += sin(pos.z * 0.4 + time * 0.6) * 0.4 * 0.15;
+    // 根据波浪计算法向量Z分量扰动 - 减小扰动强度
+    normal.z += sin(pos.z * 0.4 + time * 0.4) * 0.4 * 0.04;
 
     // 归一化法向量
     normal = normalize(normal);

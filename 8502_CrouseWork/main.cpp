@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -240,7 +240,7 @@ int main()
         return -1;
     }
 
-    Terrain terrain("Textures/heightmap.png", 100.0f, 5.0f);
+    Terrain terrain("Textures/heightmap.png", 100.0f, 10.0f);
     // terrain对象创建时会自动打印详细的创建过程
 
     // ========================================
@@ -273,8 +273,8 @@ int main()
     //   水面高度：0.0f - 与地形偏移对齐（地形高度范围 -10 到 +10）
     //   水面大小：100.0f - 覆盖整个地形（与地形大小相同）
     //   网格分辨率：100 - 足够细分以显示波浪效果
-    float waterLevel = 0.0f;      // 水面高度（Y坐标）
-    float waterSize = 100.0f;     // 水面大小
+    float waterLevel = 0.2f;      // 水面高度（Y坐标）
+    float waterSize = 500.0f;     // 水面大小
     int waterResolution = 100;    // 网格分辨率
 
     WaterPlane waterPlane(waterLevel, waterSize, waterResolution);

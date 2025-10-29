@@ -51,7 +51,7 @@ void main()
     // fresnel = (1 - cos(θ))^n
     // 其中 θ 是视线与法向量的夹角
     float cosTheta = max(dot(viewDir, norm), 0.0);
-    float fresnel = pow(1.0 - cosTheta, 3.0);  // 指数3.0可调节效果强度
+    float fresnel = pow(1.0 - cosTheta, 2.5);  // 降低指数让过渡更柔和
 
     // ========================================
     // 4. 混合反射色和水的基础色
@@ -59,17 +59,23 @@ void main()
     // 使用菲涅尔系数在反射和基础色之间插值
     // fresnel = 0 （正上方）→ 更多基础色
     // fresnel = 1 （侧面）  → 更多反射色
+
+    // 给反射色添加轻微的水色调，让反射与水体更和谐
+    vec3 tintedReflection = reflectionColor * (vec3(1.0) + waterColor * 0.2);
+
+    // 增加反射混合比例，同时提供更自然的基础混合
     vec3 baseColor = waterColor;  // 水的基础颜色
-    vec3 finalColor = mix(baseColor, reflectionColor, fresnel * 0.7);
-    // 乘以0.7是为了不让反射过于强烈，保留一些水的颜色
+    float reflectionStrength = 0.5 + fresnel * 0.45; // 反射强度范围：0.5 - 0.95
+    vec3 finalColor = mix(baseColor, tintedReflection, reflectionStrength);
+    // 即使从上方看，也能看到50%的天空反射，让水面更亮
 
     // ========================================
     // 5. 根据观察角度调整透明度
     // ========================================
     // 从上往下看：较透明（能看到水下地形）
     // 从侧面看：较不透明（水面反射更明显）
-    float alpha = 0.6 + fresnel * 0.3;
-    // 基础透明度0.6，侧面增加到0.9
+    float alpha = 0.7 + fresnel * 0.25;
+    // 基础透明度0.7，侧面增加到0.95，让水面看起来更有实体感
 
     // ========================================
     // 6. 输出最终颜色
