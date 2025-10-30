@@ -172,6 +172,10 @@ void Terrain::GenerateVertices()
     float cellSizeX = m_TerrainSize / (m_Width - 1);
     float cellSizeZ = m_TerrainSize / (m_Height - 1);
 
+    // 计算起始偏移（让地形中心在原点）
+    float startX = -m_TerrainSize / 2.0f;
+    float startZ = -m_TerrainSize / 2.0f;
+
     // ========================================
     // 遍历每个高度图像素，生成对应的3D顶点
     // ========================================
@@ -185,15 +189,15 @@ void Terrain::GenerateVertices()
             // ========================================
             // 1. 设置顶点位置
             // ========================================
-            // X坐标：从0到terrainSize，均匀分布
-            float posX = x * cellSizeX;
+            // X坐标：以原点为中心，从 -terrainSize/2 到 +terrainSize/2
+            float posX = startX + x * cellSizeX;
 
             // Y坐标（高度）：从高度图读取，乘以缩放系数
             // 不使用偏移量，让地形从Y=0开始
             float posY = GetHeight(x, z) * m_HeightScale;
 
-            // Z坐标：从0到terrainSize，均匀分布
-            float posZ = z * cellSizeZ;
+            // Z坐标：以原点为中心，从 -terrainSize/2 到 +terrainSize/2
+            float posZ = startZ + z * cellSizeZ;
 
             m_Vertices[vertexIndex].Position = glm::vec3(posX, posY, posZ);
 
@@ -533,8 +537,12 @@ float Terrain::GetHeightAt(float worldX, float worldZ) const
     // ========================================
     // 步骤1：将世界坐标转换为网格坐标
     // ========================================
-    float gridX = (worldX / m_TerrainSize) * (m_Width - 1);
-    float gridZ = (worldZ / m_TerrainSize) * (m_Height - 1);
+    // 地形现在以原点为中心，所以需要先将世界坐标转换为相对于地形起点的坐标
+    float relativeX = worldX + m_TerrainSize / 2.0f;
+    float relativeZ = worldZ + m_TerrainSize / 2.0f;
+
+    float gridX = (relativeX / m_TerrainSize) * (m_Width - 1);
+    float gridZ = (relativeZ / m_TerrainSize) * (m_Height - 1);
 
     // ========================================
     // 步骤2：获取所在格子的左上角整数坐标

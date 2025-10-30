@@ -11,6 +11,7 @@
 #include "Terrain.h"     // ← 地形类
 #include "Skybox.h"      // ← 天空盒类
 #include "WaterPlane.h"  // ← 水面类
+#include "Model.h"       // ← 模型加载类
 #include <windows.h>
 
 // ========================================
@@ -240,7 +241,7 @@ int main()
         return -1;
     }
 
-    Terrain terrain("Textures/heightmap.png", 100.0f, 10.0f);
+    Terrain terrain("Textures/heightmap.png", 200.0f, 5.0f);
     // terrain对象创建时会自动打印详细的创建过程
 
     // ========================================
@@ -274,14 +275,53 @@ int main()
     //   水面大小：100.0f - 覆盖整个地形（与地形大小相同）
     //   网格分辨率：100 - 足够细分以显示波浪效果
     float waterLevel = 0.2f;      // 水面高度（Y坐标）
-    float waterSize = 500.0f;     // 水面大小
+    float waterSize = 1000.0f;     // 水面大小
     int waterResolution = 100;    // 网格分辨率
 
     WaterPlane waterPlane(waterLevel, waterSize, waterResolution);
     std::cout << "✓ 水面创建完成" << std::endl;
 
     // ========================================
-    // 步骤9：设置光照参数
+    // 步骤9：加载3D模型（可选）
+    // ========================================
+    // 如果你有OBJ模型文件（树木、岩石等），可以在这里加载
+    // 如果没有模型文件，这部分会跳过，不影响程序运行
+    std::cout << "\n正在测试模型加载..." << std::endl;
+
+    // 创建一个空指针，用于存储模型
+    // 使用智能指针自动管理内存
+    std::unique_ptr<Model> testModel = nullptr;
+
+    // 尝试加载测试模型
+    // 注意：如果Models/cube.obj不存在，加载会失败，但程序继续运行
+    try
+    {
+        testModel = std::make_unique<Model>("Models/");
+
+        if (testModel->IsLoaded())
+        {
+            std::cout << "✓ 测试模型加载成功！" << std::endl;
+            std::cout << "  提示：你可以在场景中看到一个旋转的立方体" << std::endl;
+        }
+        else
+        {
+            std::cout << "ℹ 测试模型加载失败（这是正常的，如果你还没准备模型文件）" << std::endl;
+            testModel = nullptr;  // 清空指针
+        }
+    }
+    catch (...)
+    {
+        std::cout << "ℹ 模型文件不存在，跳过模型加载" << std::endl;
+        std::cout << "  如果想测试模型加载，请：" << std::endl;
+        std::cout << "  1. 创建 Models 文件夹" << std::endl;
+        std::cout << "  2. 下载一个OBJ模型文件（树木、岩石等）" << std::endl;
+        std::cout << "  3. 重命名为 cube.obj 并放到 Models 文件夹" << std::endl;
+        std::cout << "  详细说明参见：OBJ模型加载完整实现指南.md" << std::endl;
+        testModel = nullptr;
+    }
+
+    // ========================================
+    // 步骤10：设置光照参数
     // ========================================
     // 光源位置：从侧面上方照射（制造更明显的阴影）
     // 之前：(50, 80, 50) - 在正上方，阴影不明显
@@ -383,6 +423,39 @@ int main()
         // 9. 渲染地形
         // ────────────────────────────────────
         terrain.Render();
+
+        // ────────────────────────────────────
+        // 9.5. 渲染测试模型（如果已加载）
+        // ────────────────────────────────────
+        if (testModel != nullptr && testModel->IsLoaded())
+        {
+            // 使用地形着色器渲染模型（着色器已经激活，uniform已设置）
+            // 不需要重新激活着色器，因为terrainShader已经在使用中
+
+            // 创建模型矩阵：放置在相机前方，便于观察
+            glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+            // 平移：放在世界坐标 (0, 10, -30) - 相机前方30米，高度10米
+            modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 10.0f, -30.0f));
+
+            // 旋转：绕Y轴旋转，随时间变化（演示效果）
+            float rotationSpeed = 0.5f;  // 旋转速度
+            modelMatrix = glm::rotate(modelMatrix,
+                                      (float)glfwGetTime() * rotationSpeed,
+                                      glm::vec3(0.0f, 1.0f, 0.0f));
+
+            // 缩放：放大5倍，便于观察
+            modelMatrix = glm::scale(modelMatrix, glm::vec3(5.0f));
+
+            // 设置模型矩阵uniform
+            terrainShader.SetMat4("model", modelMatrix);
+
+            // 渲染模型
+            testModel->Render();
+
+            // 恢复model矩阵为单位矩阵（为后续渲染做准备）
+            model = glm::mat4(1.0f);
+        }
 
         // ────────────────────────────────────
         // 10. 渲染水面（反射水面）
