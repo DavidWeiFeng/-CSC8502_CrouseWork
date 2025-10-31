@@ -1,8 +1,14 @@
 #include "Camera.h"
+#include <cmath>
+
+// 辅助函数：角度转弧度
+static inline float ToRadians(float degrees) {
+    return degrees * 3.14159265358979323846f / 180.0f;
+}
 
 // 构造函数：使用向量
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-    : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+Camera::Camera(Vector3 position, Vector3 up, float yaw, float pitch)
+    : Front(Vector3(0.0f, 0.0f, -1.0f)),
       MovementSpeed(SPEED),
       MouseSensitivity(SENSITIVITY),
       Zoom(ZOOM)
@@ -18,23 +24,23 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 Camera::Camera(float posX, float posY, float posZ,
                float upX, float upY, float upZ,
                float yaw, float pitch)
-    : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+    : Front(Vector3(0.0f, 0.0f, -1.0f)),
       MovementSpeed(SPEED),
       MouseSensitivity(SENSITIVITY),
       Zoom(ZOOM)
 {
-    Position = glm::vec3(posX, posY, posZ);
-    WorldUp = glm::vec3(upX, upY, upZ);
+    Position = Vector3(posX, posY, posZ);
+    WorldUp = Vector3(upX, upY, upZ);
     Yaw = yaw;
     Pitch = pitch;
     UpdateCameraVectors();
 }
 
 // 获取视图矩阵
-glm::mat4 Camera::GetViewMatrix() const
+Matrix4 Camera::GetViewMatrix() const
 {
-    // lookAt函数：相机位置，目标位置（位置+前方向），上方向
-    return glm::lookAt(Position, Position + Front, Up);
+    // BuildViewMatrix: 相机位置，目标位置（位置+前方向），上方向
+    return Matrix4::BuildViewMatrix(Position, Position + Front, Up);
 }
 
 // 处理键盘输入
@@ -58,7 +64,7 @@ void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 }
 
 // 处理鼠标移动
-void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
+void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch)
 {
     // 应用鼠标灵敏度
     xoffset *= MouseSensitivity;
@@ -97,16 +103,16 @@ void Camera::ProcessMouseScroll(float yoffset)
 void Camera::UpdateCameraVectors()
 {
     // 从欧拉角计算新的前向量
-    glm::vec3 front;
-    front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-    front.y = sin(glm::radians(Pitch));
-    front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-    Front = glm::normalize(front);
+    Vector3 front;
+    front.x = cos(ToRadians(Yaw)) * cos(ToRadians(Pitch));
+    front.y = sin(ToRadians(Pitch));
+    front.z = sin(ToRadians(Yaw)) * cos(ToRadians(Pitch));
+    Front = front.Normalised();
 
     // 重新计算右向量和上向量
     // 右向量 = 前向量 × 世界上向量（叉积）
-    Right = glm::normalize(glm::cross(Front, WorldUp));
+    Right = Vector3::Cross(Front, WorldUp).Normalised();
 
     // 上向量 = 右向量 × 前向量
-    Up = glm::normalize(glm::cross(Right, Front));
+    Up = Vector3::Cross(Right, Front).Normalised();
 }
