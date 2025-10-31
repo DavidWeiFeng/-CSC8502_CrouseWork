@@ -1,12 +1,10 @@
 #pragma once
 
 #include "nclgl/OGLRenderer.h"
-
-// 前向声明 - 将在后续迁移中添加
-// class Camera;
-// class Terrain;
-// class Skybox;
-// class WaterPlane;
+#include "Camera.h"
+#include "Terrain.h"
+#include "Skybox.h"
+#include "WaterPlane.h"
 
 /*
  * Renderer - 主渲染器类
@@ -31,16 +29,22 @@ protected:
     void SetShaderLight(Shader* s);
 
 private:
-    // 场景对象（后续添加）
-    // Camera* camera;
-    // Terrain* terrain;
-    // Skybox* skybox;
-    // WaterPlane* water;
+    // 场景对象
+    Camera* camera;
+    Terrain* terrain;
+    Skybox* skybox;
+    WaterPlane* water;
 
     // 着色器
-    Shader* currentShader;
+    Shader* terrainShader;
+    Shader* skyboxShader;
+    Shader* waterShader;
 
     // 光照参数
     Vector3 lightPosition;
     Vector4 lightColor;
+
+    // 相机参数
+    float cameraSpeed;
+    float mouseSensitivity;
 };
