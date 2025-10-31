@@ -1,10 +1,8 @@
 #include "Skybox.h"
-#include "Shader.h"
 #include <iostream>
 
-// STB_image库（用于加载纹理）
-// 注意：STB_IMAGE_IMPLEMENTATION 已在 Texture.cpp 中定义，这里只需包含头文件
-#include <stb_image.h>
+// SOIL 库（用于加载纹理）
+#include "SOIL/SOIL.h"
 
 /**
  * 构造函数 - 加载立方体贴图并初始化顶点数据
@@ -119,15 +117,11 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-    // 重要：立方体贴图不需要翻转Y轴
-    // 因为Texture.cpp中设置了stbi_set_flip_vertically_on_load(true)
-    // 我们需要临时禁用它
-    stbi_set_flip_vertically_on_load(false);
-
     // 加载6张纹理到立方体贴图的6个面
     int width, height, nrChannels;
     for (unsigned int i = 0; i < faces.size(); i++) {
-        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        // 使用 SOIL 加载图像（立方体贴图不需要翻转Y轴）
+        unsigned char* data = SOIL_load_image(faces[i].c_str(), &width, &height, &nrChannels, 0);
 
         if (data) {
             // 根据通道数确定格式
@@ -152,13 +146,13 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
                 data                                   // 像素数据
             );
 
-            stbi_image_free(data);
+            SOIL_free_image_data(data);
 
             std::cout << "天空盒纹理加载成功: " << faces[i] << " (" << width << "x" << height << ")" << std::endl;
         }
         else {
             std::cerr << "错误：立方体贴图纹理加载失败: " << faces[i] << std::endl;
-            stbi_image_free(data);
+            SOIL_free_image_data(data);
         }
     }
 
@@ -172,9 +166,6 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    // 恢复翻转设置（用于普通2D纹理）
-    stbi_set_flip_vertically_on_load(true);
 
     return textureID;
 }
@@ -192,18 +183,18 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
  * @param view 相机视图矩阵
  * @param projection 投影矩阵
  */
-void Skybox::Draw(Shader& shader, const glm::mat4& view, const glm::mat4& projection) {
+void Skybox::Draw(Shader& shader, const Matrix4& view, const Matrix4& projection) {
     // 激活着色器
-    shader.Use();
+    glUseProgram(shader.GetProgram());
 
-    // 设置uniform变量
-    shader.SetMat4("view", view);
-    shader.SetMat4("projection", projection);
+    // 设置uniform变量（nclgl Shader 使用 glUniform 直接设置）
+    glUniformMatrix4fv(glGetUniformLocation(shader.GetProgram(), "view"), 1, false, (float*)&view);
+    glUniformMatrix4fv(glGetUniformLocation(shader.GetProgram(), "projection"), 1, false, (float*)&projection);
 
     // 绑定天空盒立方体贴图到纹理单元0
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-    shader.SetInt("skybox", 0);
+    glUniform1i(glGetUniformLocation(shader.GetProgram(), "skybox"), 0);
 
     // 渲染立方体
     glBindVertexArray(VAO);

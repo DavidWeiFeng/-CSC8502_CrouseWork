@@ -1,11 +1,11 @@
 #pragma once
 #include <glad/glad.h>
-#include <glm/glm.hpp>
+#include "nclgl/Matrix4.h"
 #include <string>
 #include <vector>
 
-// 前向声明
-class Shader;
+// 使用 nclgl 框架的 Shader
+#include "nclgl/Shader.h"
 
 /**
  * @class Skybox
@@ -39,7 +39,7 @@ public:
      * @param view 相机视图矩阵
      * @param projection 投影矩阵
      */
-    void Draw(Shader& shader, const glm::mat4& view, const glm::mat4& projection);
+    void Draw(Shader& shader, const Matrix4& view, const Matrix4& projection);
 
     /**
      * @brief 获取立方体贴图纹理ID

@@ -3,11 +3,9 @@
 #include <algorithm>
 
 // ========================================
-// STB_IMAGE - 图像加载库
+// SOIL - 图像加载库
 // ========================================
-// 注意：STB_IMAGE_IMPLEMENTATION 已经在 Texture.cpp 中定义
-// 这里只需要包含头文件即可
-#include "stb_image.h"
+#include "SOIL/SOIL.h"
 
 // ========================================
 // 构造函数 - 创建地形对象
@@ -101,7 +99,7 @@ Terrain::~Terrain()
 bool Terrain::LoadHeightmap(const std::string& path)
 {
     // ========================================
-    // 使用STB_image加载图像
+    // 使用 SOIL 加载图像
     // ========================================
     // 参数：
     //   path.c_str()  - 文件路径（C风格字符串）
@@ -111,13 +109,12 @@ bool Terrain::LoadHeightmap(const std::string& path)
     //   1             - 我们要求：强制转为1通道（灰度图）
     // ========================================
     int channels;
-    unsigned char* data = stbi_load(path.c_str(), &m_Width, &m_Height, &channels, 1);
+    unsigned char* data = SOIL_load_image(path.c_str(), &m_Width, &m_Height, &channels, 1);
 
     // 检查是否加载成功
     if (!data)
     {
         std::cerr << "错误：无法加载图像 " << path << std::endl;
-        std::cerr << "STB错误信息: " << stbi_failure_reason() << std::endl;
         return false;
     }
 
@@ -144,8 +141,8 @@ bool Terrain::LoadHeightmap(const std::string& path)
     // ========================================
     // 释放图像数据内存
     // ========================================
-    // STB_image分配的内存需要用stbi_image_free释放
-    stbi_image_free(data);
+    // SOIL 分配的内存需要用 SOIL_free_image_data 释放
+    SOIL_free_image_data(data);
 
     return true;
 }
@@ -199,7 +196,7 @@ void Terrain::GenerateVertices()
             // Z坐标：以原点为中心，从 -terrainSize/2 到 +terrainSize/2
             float posZ = startZ + z * cellSizeZ;
 
-            m_Vertices[vertexIndex].Position = glm::vec3(posX, posY, posZ);
+            m_Vertices[vertexIndex].Position = Vector3(posX, posY, posZ);
 
             // ========================================
             // 2. 设置纹理坐标
@@ -209,13 +206,13 @@ void Terrain::GenerateVertices()
             // v = z / (高度-1)，从前到后：0 → 1
             float u = static_cast<float>(x) / (m_Width - 1);
             float v = static_cast<float>(z) / (m_Height - 1);
-            m_Vertices[vertexIndex].TexCoord = glm::vec2(u, v);
+            m_Vertices[vertexIndex].TexCoord = Vector2(u, v);
 
             // ========================================
             // 3. 法向量初始化为(0,1,0)
             // ========================================
             // 先设置为向上的向量，稍后会重新计算
-            m_Vertices[vertexIndex].Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            m_Vertices[vertexIndex].Normal = Vector3(0.0f, 1.0f, 0.0f);
         }
     }
 }
@@ -299,7 +296,7 @@ void Terrain::CalculateNormals()
     // ========================================
     for (auto& vertex : m_Vertices)
     {
-        vertex.Normal = glm::vec3(0.0f, 0.0f, 0.0f);
+        vertex.Normal = Vector3(0.0f, 0.0f, 0.0f);
     }
 
     // ========================================
@@ -314,9 +311,9 @@ void Terrain::CalculateNormals()
         unsigned int index2 = m_Indices[i + 2];
 
         // 获取3个顶点的位置
-        glm::vec3 v0 = m_Vertices[index0].Position;
-        glm::vec3 v1 = m_Vertices[index1].Position;
-        glm::vec3 v2 = m_Vertices[index2].Position;
+        Vector3 v0 = m_Vertices[index0].Position;
+        Vector3 v1 = m_Vertices[index1].Position;
+        Vector3 v2 = m_Vertices[index2].Position;
 
         // ========================================
         // 计算三角形的两条边向量
@@ -330,16 +327,16 @@ void Terrain::CalculateNormals()
         // edge1 = v1 - v0（从v0指向v1）
         // edge2 = v2 - v0（从v0指向v2）
         // ========================================
-        glm::vec3 edge1 = v1 - v0;
-        glm::vec3 edge2 = v2 - v0;
+        Vector3 edge1 = v1 - v0;
+        Vector3 edge2 = v2 - v0;
 
         // ========================================
         // 使用叉乘计算法向量
         // ========================================
-        // cross(edge1, edge2) 得到垂直于三角形平面的向量
+        // Cross(edge1, edge2) 得到垂直于三角形平面的向量
         // 这个向量的方向遵循右手定则
         // ========================================
-        glm::vec3 normal = glm::cross(edge1, edge2);
+        Vector3 normal = Vector3::Cross(edge1, edge2);
 
         // ========================================
         // 将法向量累加到3个顶点上
@@ -360,7 +357,7 @@ void Terrain::CalculateNormals()
     // ========================================
     for (auto& vertex : m_Vertices)
     {
-        vertex.Normal = glm::normalize(vertex.Normal);
+        vertex.Normal = vertex.Normal.Normalised();
     }
 }
 

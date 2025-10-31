@@ -2,7 +2,8 @@
 #define TERRAIN_H
 
 #include <glad/glad.h>
-#include <glm/glm.hpp>
+#include "nclgl/Vector2.h"
+#include "nclgl/Vector3.h"
 #include <string>
 #include <vector>
 
@@ -65,9 +66,9 @@ private:
     // ========================================
     struct Vertex
     {
-        glm::vec3 Position;   // 顶点位置 (x, y, z)
-        glm::vec3 Normal;     // 法向量（用于光照计算）
-        glm::vec2 TexCoord;   // 纹理坐标 (u, v)
+        Vector3 Position;   // 顶点位置 (x, y, z)
+        Vector3 Normal;     // 法向量（用于光照计算）
+        Vector2 TexCoord;   // 纹理坐标 (u, v)
     };
 
     // ========================================

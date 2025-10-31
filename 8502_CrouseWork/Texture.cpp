@@ -1,9 +1,8 @@
 #include "Texture.h"
 #include <iostream>
 
-// 定义 STB_IMAGE 实现
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+// 使用 SOIL 图像加载库
+#include "SOIL/SOIL.h"
 
 // 构造函数：从文件加载
 Texture::Texture(const std::string& path, bool generateMipmap)
@@ -52,16 +51,13 @@ void Texture::Unbind() const
 // 从文件加载纹理
 bool Texture::LoadFromFile(const std::string& path, bool generateMipmap)
 {
-    // STB_image 默认加载图像时y轴是反的，需要翻转
-    stbi_set_flip_vertically_on_load(true);
-
-    // 加载图像（保持原始格式）
-    unsigned char* data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_Channels, 0);
+    // 使用 SOIL 加载图像（保持原始格式）
+    // SOIL_load_image 参数：文件名，宽度指针，高度指针，通道数指针，强制通道数（0表示自动）
+    unsigned char* data = SOIL_load_image(path.c_str(), &m_Width, &m_Height, &m_Channels, 0);
 
     if (!data)
     {
-        std::cerr << "错误：STB无法加载图像: " << path << std::endl;
-        std::cerr << "STB错误信息: " << stbi_failure_reason() << std::endl;
+        std::cerr << "错误：SOIL无法加载图像: " << path << std::endl;
         return false;
     }
 
@@ -108,7 +104,7 @@ bool Texture::LoadFromFile(const std::string& path, bool generateMipmap)
     else
     {
         std::cerr << "错误：不支持的通道数: " << m_Channels << std::endl;
-        stbi_image_free(data);
+        SOIL_free_image_data(data);
         return false;
     }
 
@@ -125,7 +121,7 @@ bool Texture::LoadFromFile(const std::string& path, bool generateMipmap)
     }
 
     // 释放图像数据
-    stbi_image_free(data);
+    SOIL_free_image_data(data);
 
     // 解绑纹理
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -136,16 +132,12 @@ bool Texture::LoadFromFile(const std::string& path, bool generateMipmap)
 // 从内存缓冲区加载纹理
 bool Texture::LoadFromMemory(const unsigned char* buffer, int bufferSize, const std::string& name, bool generateMipmap)
 {
-    // STB_image 默认加载图像时y轴是反的，需要翻转
-    stbi_set_flip_vertically_on_load(true);
-
-    // 从内存缓冲区加载图像
-    unsigned char* data = stbi_load_from_memory(buffer, bufferSize, &m_Width, &m_Height, &m_Channels, 0);
+    // 使用 SOIL 从内存缓冲区加载图像
+    unsigned char* data = SOIL_load_image_from_memory(buffer, bufferSize, &m_Width, &m_Height, &m_Channels, 0);
 
     if (!data)
     {
-        std::cerr << "错误：STB无法从内存加载图像: " << name << std::endl;
-        std::cerr << "STB错误信息: " << stbi_failure_reason() << std::endl;
+        std::cerr << "错误：SOIL无法从内存加载图像: " << name << std::endl;
         return false;
     }
 
@@ -188,7 +180,7 @@ bool Texture::LoadFromMemory(const unsigned char* buffer, int bufferSize, const 
     else
     {
         std::cerr << "错误：不支持的通道数: " << m_Channels << std::endl;
-        stbi_image_free(data);
+        SOIL_free_image_data(data);
         return false;
     }
 
@@ -205,7 +197,7 @@ bool Texture::LoadFromMemory(const unsigned char* buffer, int bufferSize, const 
     }
 
     // 释放图像数据
-    stbi_image_free(data);
+    SOIL_free_image_data(data);
 
     // 解绑纹理
     glBindTexture(GL_TEXTURE_2D, 0);

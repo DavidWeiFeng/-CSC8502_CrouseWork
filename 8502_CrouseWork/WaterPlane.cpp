@@ -1,5 +1,4 @@
 #include "WaterPlane.h"
-#include "Shader.h"
 #include <iostream>
 
 // ========================================
@@ -96,14 +95,14 @@ void WaterPlane::GenerateMesh()
             float posX = startX + x * cellSize;
             float posY = m_WaterLevel;
             float posZ = startZ + z * cellSize;
-            m_Vertices[index].Position = glm::vec3(posX, posY, posZ);
+            m_Vertices[index].Position = Vector3(posX, posY, posZ);
 
             // ========================================
             // 设置法向量（初始向上）
             // ========================================
             // 平静水面的法向量指向正上方
             // 波浪的法向量会在着色器中动态计算
-            m_Vertices[index].Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            m_Vertices[index].Normal = Vector3(0.0f, 1.0f, 0.0f);
 
             // ========================================
             // 设置纹理坐标
@@ -112,7 +111,7 @@ void WaterPlane::GenerateMesh()
             // 用于采样水纹理或作为波浪计算的输入
             float u = static_cast<float>(x) / (m_Resolution - 1);
             float v = static_cast<float>(z) / (m_Resolution - 1);
-            m_Vertices[index].TexCoord = glm::vec2(u, v);
+            m_Vertices[index].TexCoord = Vector2(u, v);
         }
     }
 

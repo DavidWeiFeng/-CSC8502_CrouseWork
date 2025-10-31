@@ -1,11 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <glm/glm.hpp>
+#include "nclgl/Vector2.h"
+#include "nclgl/Vector3.h"
 #include <vector>
-
-// 前向声明
-class Shader;
 
 /**
  * @class WaterPlane
@@ -72,9 +70,9 @@ private:
 
     // 顶点结构体
     struct Vertex {
-        glm::vec3 Position;     // 顶点位置
-        glm::vec3 Normal;       // 法向量（用于光照和反射计算）
-        glm::vec2 TexCoord;     // 纹理坐标
+        Vector3 Position;     // 顶点位置
+        Vector3 Normal;       // 法向量（用于光照和反射计算）
+        Vector2 TexCoord;     // 纹理坐标
     };
 
     std::vector<Vertex> m_Vertices;         // 顶点数组
