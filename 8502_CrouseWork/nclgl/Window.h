@@ -44,7 +44,7 @@ public:
 	const std::string& GetTitle()   const { return windowTitle; }
 	void				SetTitle(const std::string& title) {
 		windowTitle = title;
-		SetWindowText(windowHandle, windowTitle.c_str());
+		SetWindowTextA(windowHandle, windowTitle.c_str());
 	};
 
 	Vector2	GetScreenSize() {return size;};

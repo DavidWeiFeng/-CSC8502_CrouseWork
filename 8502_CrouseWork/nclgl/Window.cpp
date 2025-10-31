@@ -25,11 +25,11 @@ Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
 
 	HINSTANCE hInstance = GetModuleHandle( NULL );
 
-	WNDCLASSEX windowClass;
-	ZeroMemory(&windowClass, sizeof(WNDCLASSEX));
+	WNDCLASSEXA windowClass;
+	ZeroMemory(&windowClass, sizeof(WNDCLASSEXA));
 
-	if(!GetClassInfoEx(hInstance,WINDOWCLASS,&windowClass))	{
-		windowClass.cbSize		= sizeof(WNDCLASSEX);
+	if(!GetClassInfoExA(hInstance,WINDOWCLASS,&windowClass))	{
+		windowClass.cbSize		= sizeof(WNDCLASSEXA);
 	    windowClass.style		= CS_HREDRAW | CS_VREDRAW;
 		windowClass.lpfnWndProc	= (WNDPROC)WindowProc;
 		windowClass.hInstance	= hInstance;
@@ -37,7 +37,7 @@ Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
 		windowClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
 		windowClass.lpszClassName = WINDOWCLASS;
 
-		if(!RegisterClassEx(&windowClass)) {
+		if(!RegisterClassExA(&windowClass)) {
 			std::cout << "Window::Window(): Failed to register class!" << std::endl;
 			return;
 		}
@@ -60,7 +60,7 @@ Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
 		}
 	}
 
-	windowHandle = CreateWindowEx(fullScreen ? WS_EX_TOPMOST : NULL,
+	windowHandle = CreateWindowExA(fullScreen ? WS_EX_TOPMOST : NULL,
 	WINDOWCLASS,    // name of the window class
 	windowTitle.c_str(),   // title of the window
 	fullScreen ? WS_POPUP|WS_VISIBLE : WS_OVERLAPPEDWINDOW|WS_POPUP|WS_VISIBLE|WS_SYSMENU|WS_MAXIMIZEBOX|WS_MINIMIZEBOX,    // window style
