@@ -16,7 +16,8 @@
       "Bash(git rm:*)",
       "Bash(\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe\" \"8502_CrouseWork\\8502_CrouseWork.vcxproj\" /p:Configuration=Debug /p:Platform=x64 /t:Build /v:minimal /nologo)",
       "Bash(Select-String -Pattern \"Texture\\.cpp|error|succeeded|failed\" -Context 0,1)",
-      "Bash(\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe\" \"8502_CrouseWork\\8502_CrouseWork.vcxproj\" //p:Configuration=Debug //p:Platform=x64 //t:Build //v:minimal //nologo)"
+      "Bash(\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe\" \"8502_CrouseWork\\8502_CrouseWork.vcxproj\" //p:Configuration=Debug //p:Platform=x64 //t:Build //v:minimal //nologo)",
+      "Read(//c/Users/c5009794/source/**)"
     ],
     "deny": [],
     "ask": []

@@ -44,9 +44,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     std::cout << "\n[2/5] 加载着色器..." << std::endl;
 
     // 注意：路径相对于可执行文件所在目录（x64/Debug/）
-    // 需要使用相对路径 ../../8502_CrouseWork/Shaders/
-    terrainShader = new Shader("../../8502_CrouseWork/Shaders/terrainVertex.glsl",
-                                "../../8502_CrouseWork/Shaders/terrainFragment.glsl");
+    // 需要向上两级到达项目目录，然后进入 Shaders
+    terrainShader = new Shader("../../Shaders/terrainVertex.glsl",
+                                "../../Shaders/terrainFragment.glsl");
     if (!terrainShader->LoadSuccess()) {
         std::cerr << "✗ 地形着色器加载失败！" << std::endl;
         init = false;
@@ -54,8 +54,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     }
     std::cout << "✓ 地形着色器加载成功" << std::endl;
 
-    skyboxShader = new Shader("../../8502_CrouseWork/Shaders/skyboxVertex.glsl",
-                               "../../8502_CrouseWork/Shaders/skyboxFragment.glsl");
+    skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl",
+                               "../../Shaders/skyboxFragment.glsl");
     if (!skyboxShader->LoadSuccess()) {
         std::cerr << "✗ 天空盒着色器加载失败！" << std::endl;
         init = false;
@@ -63,8 +63,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     }
     std::cout << "✓ 天空盒着色器加载成功" << std::endl;
 
-    waterShader = new Shader("../../8502_CrouseWork/Shaders/waterVertex.glsl",
-                              "../../8502_CrouseWork/Shaders/waterFragment.glsl");
+    waterShader = new Shader("../../Shaders/waterVertex.glsl",
+                              "../../Shaders/waterFragment.glsl");
     if (!waterShader->LoadSuccess()) {
         std::cerr << "✗ 水面着色器加载失败！" << std::endl;
         init = false;
