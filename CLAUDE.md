@@ -23,14 +23,18 @@ msbuild 8502_CrouseWork.sln /p:Configuration=Release /p:Platform=x64
 
 ### Running the Project
 ```bash
-# Debug build
-./x64/Debug/8502_CrouseWork.exe
+# Debug build (可以从任何目录运行)
+x64\Debug\8502_CrouseWork.exe
 
 # Release build
-./x64/Release/8502_CrouseWork.exe
+x64\Release\8502_CrouseWork.exe
+
+# 或者在 Visual Studio 中按 F5 调试运行
 ```
 
-**Note:** The executable must be run from the repository root directory to correctly locate shader files and textures.
+**Note:**
+- 程序使用相对路径（`../../8502_CrouseWork/Shaders/`）加载资源，可以从任何目录运行
+- 在 Visual Studio 中运行时，工作目录会自动设置正确
 
 ## Project Structure
 
