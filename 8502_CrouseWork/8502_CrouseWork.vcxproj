@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)Dependencies\GLFW\include;$(ProjectDir)Dependencies\GLAD\include;$(ProjectDir)Dependencies\GLM;$(ProjectDir)Dependencies\STB;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Dependencies\GLFW\lib-vc2022;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)nclgl;$(ProjectDir)Third Party;$(ProjectDir)Third Party\glad;$(ProjectDir)Third Party\SOIL;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Third Party\SOIL\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)Dependencies\GLFW\include;$(ProjectDir)Dependencies\GLAD\include;$(ProjectDir)Dependencies\GLM;$(ProjectDir)Dependencies\STB;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Dependencies\GLFW\lib-vc2022;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)nclgl;$(ProjectDir)Third Party;$(ProjectDir)Third Party\glad;$(ProjectDir)Third Party\SOIL;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Third Party\SOIL\x64\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -113,13 +113,11 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Dependencies\TinyOBJ;$(ProjectDir)Dependencies\Assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)Dependencies\Assimp\lib\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SOIL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -130,16 +128,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SOIL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Dependencies\GLAD\src\glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -149,10 +147,24 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="WaterPlane.cpp" />
     <ClCompile Include="Window.cpp" />
+    <ClCompile Include="Third Party\glad\glad.c" />
+    <ClCompile Include="nclgl\ComputeShader.cpp" />
+    <ClCompile Include="nclgl\GameTimer.cpp" />
+    <ClCompile Include="nclgl\Keyboard.cpp" />
+    <ClCompile Include="nclgl\Matrix2.cpp" />
+    <ClCompile Include="nclgl\Matrix3.cpp" />
+    <ClCompile Include="nclgl\Matrix4.cpp" />
+    <ClCompile Include="nclgl\Mesh.cpp" />
+    <ClCompile Include="nclgl\MeshAnimation.cpp" />
+    <ClCompile Include="nclgl\MeshMaterial.cpp" />
+    <ClCompile Include="nclgl\Mouse.cpp" />
+    <ClCompile Include="nclgl\OGLRenderer.cpp" />
+    <ClCompile Include="nclgl\Quaternion.cpp" />
+    <ClCompile Include="nclgl\Shader.cpp" />
+    <ClCompile Include="nclgl\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Dependencies\TinyOBJ\tiny_obj_loader.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Shader.h" />
@@ -161,6 +173,25 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="WaterPlane.h" />
     <ClInclude Include="Window.h" />
+    <ClInclude Include="nclgl\common.h" />
+    <ClInclude Include="nclgl\ComputeShader.h" />
+    <ClInclude Include="nclgl\GameTimer.h" />
+    <ClInclude Include="nclgl\InputDevice.h" />
+    <ClInclude Include="nclgl\Keyboard.h" />
+    <ClInclude Include="nclgl\Matrix2.h" />
+    <ClInclude Include="nclgl\Matrix3.h" />
+    <ClInclude Include="nclgl\Matrix4.h" />
+    <ClInclude Include="nclgl\Mesh.h" />
+    <ClInclude Include="nclgl\MeshAnimation.h" />
+    <ClInclude Include="nclgl\MeshMaterial.h" />
+    <ClInclude Include="nclgl\Mouse.h" />
+    <ClInclude Include="nclgl\OGLRenderer.h" />
+    <ClInclude Include="nclgl\Quaternion.h" />
+    <ClInclude Include="nclgl\Shader.h" />
+    <ClInclude Include="nclgl\Vector2.h" />
+    <ClInclude Include="nclgl\Vector3.h" />
+    <ClInclude Include="nclgl\Vector4.h" />
+    <ClInclude Include="nclgl\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\basicFragment.glsl" />
@@ -177,7 +208,4 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /Y /D &quot;$(ProjectDir)Dependencies\Assimp\bin\x64\$(Configuration)\*.dll&quot; &quot;$(OutDir)&quot;" />
-  </Target>
 </Project>
