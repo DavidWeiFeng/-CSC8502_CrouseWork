@@ -139,14 +139,10 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="WaterPlane.cpp" />
-    <ClCompile Include="Window.cpp" />
     <ClCompile Include="Third Party\glad\glad.c" />
     <ClCompile Include="nclgl\ComputeShader.cpp" />
     <ClCompile Include="nclgl\GameTimer.cpp" />
@@ -165,14 +161,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="Shader.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="WaterPlane.h" />
-    <ClInclude Include="Window.h" />
     <ClInclude Include="nclgl\common.h" />
     <ClInclude Include="nclgl\ComputeShader.h" />
     <ClInclude Include="nclgl\GameTimer.h" />
