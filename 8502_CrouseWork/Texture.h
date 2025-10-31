@@ -8,10 +8,17 @@
 class Texture
 {
 public:
-    // 构造函数：加载纹理
+    // 构造函数：从文件加载纹理
     // path: 纹理文件路径
     // generateMipmap: 是否生成Mipmap（默认true）
     Texture(const std::string& path, bool generateMipmap = true);
+
+    // 构造函数：从内存缓冲区加载纹理（用于嵌入纹理）
+    // data: 图像数据缓冲区
+    // size: 缓冲区大小（字节）
+    // name: 纹理名称（用于调试）
+    // generateMipmap: 是否生成Mipmap（默认true）
+    Texture(const unsigned char* data, int size, const std::string& name, bool generateMipmap = true);
 
     // 析构函数：释放纹理
     ~Texture();
@@ -43,6 +50,9 @@ private:
 
     // 辅助函数：从文件加载纹理
     bool LoadFromFile(const std::string& path, bool generateMipmap);
+
+    // 辅助函数：从内存缓冲区加载纹理
+    bool LoadFromMemory(const unsigned char* data, int size, const std::string& name, bool generateMipmap);
 };
 
 #endif // TEXTURE_H

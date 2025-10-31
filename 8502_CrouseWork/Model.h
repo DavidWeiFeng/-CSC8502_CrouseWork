@@ -65,7 +65,7 @@ private:
     bool LoadModel(const std::string& filePath);
     void ProcessNode(aiNode* node, const aiScene* scene);
     Mesh* ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    std::shared_ptr<Texture> LoadMaterialTexture(aiMaterial* mat, aiTextureType type);
+    std::shared_ptr<Texture> LoadMaterialTexture(aiMaterial* mat, aiTextureType type, const aiScene* scene);
 };
 
 #endif // MODEL_H

@@ -296,7 +296,7 @@ int main()
     // 注意：如果Models/cube.obj不存在，加载会失败，但程序继续运行
     try
     {
-        testModel = std::make_unique<Model>("Models/");
+        testModel = std::make_unique<Model>("Models/tree.glb");
 
         if (testModel->IsLoaded())
         {

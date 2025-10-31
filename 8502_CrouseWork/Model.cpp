@@ -210,7 +210,7 @@ Mesh* Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         std::cout << "    - 材质: " << matName.C_Str() << std::endl;
 
         // 加载漫反射纹理
-        texture = LoadMaterialTexture(material, aiTextureType_DIFFUSE);
+        texture = LoadMaterialTexture(material, aiTextureType_DIFFUSE, scene);
     }
 
     // ========================================
@@ -222,7 +222,7 @@ Mesh* Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 // ========================================
 // 加载材质纹理
 // ========================================
-std::shared_ptr<Texture> Model::LoadMaterialTexture(aiMaterial* mat, aiTextureType type)
+std::shared_ptr<Texture> Model::LoadMaterialTexture(aiMaterial* mat, aiTextureType type, const aiScene* scene)
 {
     // 检查是否有该类型的纹理
     if (mat->GetTextureCount(type) == 0)
@@ -235,21 +235,86 @@ std::shared_ptr<Texture> Model::LoadMaterialTexture(aiMaterial* mat, aiTextureTy
     aiString path;
     mat->GetTexture(type, 0, &path);
 
-    std::string texturePath = m_Directory + std::string(path.C_Str());
-    std::cout << "      - 加载纹理: " << path.C_Str() << std::endl;
+    std::string texturePathStr = std::string(path.C_Str());
+    std::cout << "      - 加载纹理: " << texturePathStr << std::endl;
 
     try
     {
-        auto texture = std::make_shared<Texture>(texturePath);
-        if (texture->IsLoaded())
+        // ========================================
+        // 检查是否是嵌入纹理（以 * 开头）
+        // ========================================
+        if (texturePathStr[0] == '*')
         {
-            std::cout << "      ✓ 纹理加载成功" << std::endl;
-            return texture;
+            // 解析嵌入纹理索引（例如 "*0" -> 0, "*1" -> 1）
+            int textureIndex = std::atoi(texturePathStr.c_str() + 1);
+
+            std::cout << "      - 检测到嵌入纹理，索引: " << textureIndex << std::endl;
+
+            // 检查索引是否有效
+            if (textureIndex >= 0 && textureIndex < static_cast<int>(scene->mNumTextures))
+            {
+                aiTexture* embeddedTexture = scene->mTextures[textureIndex];
+
+                // 构造纹理名称（用于调试）
+                std::string textureName = "EmbeddedTexture_" + std::to_string(textureIndex);
+
+                // 检查纹理格式
+                if (embeddedTexture->mHeight == 0)
+                {
+                    // 压缩格式（如 PNG, JPG）
+                    std::cout << "      - 嵌入纹理格式: " << embeddedTexture->achFormatHint << std::endl;
+                    std::cout << "      - 数据大小: " << embeddedTexture->mWidth << " 字节" << std::endl;
+
+                    // 从内存缓冲区加载纹理
+                    auto texture = std::make_shared<Texture>(
+                        reinterpret_cast<unsigned char*>(embeddedTexture->pcData),
+                        embeddedTexture->mWidth,
+                        textureName
+                    );
+
+                    if (texture->IsLoaded())
+                    {
+                        std::cout << "      ✓ 嵌入纹理加载成功" << std::endl;
+                        return texture;
+                    }
+                    else
+                    {
+                        std::cerr << "      ✗ 嵌入纹理加载失败" << std::endl;
+                        return nullptr;
+                    }
+                }
+                else
+                {
+                    // 未压缩格式（ARGB8888）
+                    std::cerr << "      ✗ 不支持未压缩的嵌入纹理格式" << std::endl;
+                    return nullptr;
+                }
+            }
+            else
+            {
+                std::cerr << "      ✗ 嵌入纹理索引超出范围: " << textureIndex
+                          << " (场景中有 " << scene->mNumTextures << " 个嵌入纹理)" << std::endl;
+                return nullptr;
+            }
         }
         else
         {
-            std::cerr << "      ✗ 纹理加载失败" << std::endl;
-            return nullptr;
+            // ========================================
+            // 外部纹理文件
+            // ========================================
+            std::string texturePath = m_Directory + texturePathStr;
+
+            auto texture = std::make_shared<Texture>(texturePath);
+            if (texture->IsLoaded())
+            {
+                std::cout << "      ✓ 纹理加载成功" << std::endl;
+                return texture;
+            }
+            else
+            {
+                std::cerr << "      ✗ 纹理加载失败" << std::endl;
+                return nullptr;
+            }
         }
     }
     catch (const std::exception& e)
