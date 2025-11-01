@@ -1,8 +1,8 @@
 #include "Skybox.h"
 #include <iostream>
 
-// SOIL 库（用于加载纹理）
-#include "SOIL/SOIL.h"
+// STB 库（用于加载纹理）
+#include "stb_image.h"
 
 /**
  * 构造函数 - 加载立方体贴图并初始化顶点数据
@@ -117,15 +117,17 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
+    std::cout << "开始加载天空盒立方体贴图..." << std::endl;
+
     // 加载6张纹理到立方体贴图的6个面
     int width, height, nrChannels;
     for (unsigned int i = 0; i < faces.size(); i++) {
-        // 使用 SOIL 加载图像（立方体贴图不需要翻转Y轴）
-        unsigned char* data = SOIL_load_image(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        // 使用 STB 加载图像（立方体贴图不需要翻转Y轴）
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 3);  // 强制RGB
 
         if (data) {
             // 根据通道数确定格式
-            GLenum format;
+            GLenum format = GL_RGB;  // 默认使用RGB
             if (nrChannels == 1)
                 format = GL_RED;
             else if (nrChannels == 3)
@@ -146,13 +148,13 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
                 data                                   // 像素数据
             );
 
-            SOIL_free_image_data(data);
+            stbi_image_free(data);
 
             std::cout << "天空盒纹理加载成功: " << faces[i] << " (" << width << "x" << height << ")" << std::endl;
         }
         else {
             std::cerr << "错误：立方体贴图纹理加载失败: " << faces[i] << std::endl;
-            SOIL_free_image_data(data);
+            std::cerr << "STB错误信息: " << stbi_failure_reason() << std::endl;
         }
     }
 
@@ -184,6 +186,12 @@ GLuint Skybox::loadCubemap(const std::vector<std::string>& faces) {
  * @param projection 投影矩阵
  */
 void Skybox::Draw(Shader& shader, const Matrix4& view, const Matrix4& projection) {
+    // 安全检查：确保VAO已经创建
+    if (VAO == 0) {
+        std::cerr << "错误：天空盒VAO未初始化，无法渲染！" << std::endl;
+        return;
+    }
+
     // 激活着色器
     glUseProgram(shader.GetProgram());
 

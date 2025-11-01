@@ -1,4 +1,5 @@
-#include "Renderer.h"
+﻿#include "Renderer.h"
+#include "nclgl/common.h"
 #include <iostream>
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
@@ -11,6 +12,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     terrainShader = nullptr;
     skyboxShader = nullptr;
     waterShader = nullptr;
+
+    terrainTexture = nullptr;
 
     // 初始化参数
     lightPosition = Vector3(100.0f, 100.0f, 100.0f);
@@ -45,8 +48,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
     // 注意：路径相对于可执行文件所在目录（x64/Debug/）
     // 需要向上两级到达项目目录，然后进入 Shaders
-    terrainShader = new Shader("../../Shaders/terrainVertex.glsl",
-                                "../../Shaders/terrainFragment.glsl");
+    terrainShader = new Shader("terrainVertex.glsl",
+                                "terrainFragment.glsl");
     if (!terrainShader->LoadSuccess()) {
         std::cerr << "✗ 地形着色器加载失败！" << std::endl;
         init = false;
@@ -54,8 +57,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     }
     std::cout << "✓ 地形着色器加载成功" << std::endl;
 
-    skyboxShader = new Shader("../../Shaders/skyboxVertex.glsl",
-                               "../../Shaders/skyboxFragment.glsl");
+    skyboxShader = new Shader("skyboxVertex.glsl",
+                               "skyboxFragment.glsl");
     if (!skyboxShader->LoadSuccess()) {
         std::cerr << "✗ 天空盒着色器加载失败！" << std::endl;
         init = false;
@@ -63,8 +66,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     }
     std::cout << "✓ 天空盒着色器加载成功" << std::endl;
 
-    waterShader = new Shader("../../Shaders/waterVertex.glsl",
-                              "../../Shaders/waterFragment.glsl");
+    waterShader = new Shader("waterVertex.glsl",
+                              "waterFragment.glsl");
     if (!waterShader->LoadSuccess()) {
         std::cerr << "✗ 水面着色器加载失败！" << std::endl;
         init = false;
@@ -73,33 +76,36 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     std::cout << "✓ 水面着色器加载成功" << std::endl;
 
     // ========================================
-    // 创建地形（暂时注释，因为可能没有高度图）
+    // 创建地形
     // ========================================
     std::cout << "\n[3/5] 创建地形..." << std::endl;
-    std::cout << "  (暂时跳过 - 需要高度图纹理)" << std::endl;
-    // terrain = new Terrain("Textures/heightmap.png", 100.0f, 10.0f);
+    terrain = new Terrain(TEXTUREDIR"heightmap.png", 100.0f, 10.0f);
+
+    // 加载地形纹理
+    std::cout << "加载地形纹理..." << std::endl;
+    terrainTexture = new Texture(TEXTUREDIR"grass.jpg", true);
+    std::cout << "✓ 地形纹理加载成功" << std::endl;
 
     // ========================================
-    // 创建天空盒（暂时注释，因为可能没有天空盒纹理）
+    // 创建天空盒
     // ========================================
     std::cout << "\n[4/5] 创建天空盒..." << std::endl;
-    std::cout << "  (暂时跳过 - 需要天空盒纹理)" << std::endl;
-    // std::vector<std::string> faces = {
-    //     "Textures/skybox/right.jpg",
-    //     "Textures/skybox/left.jpg",
-    //     "Textures/skybox/top.jpg",
-    //     "Textures/skybox/bottom.jpg",
-    //     "Textures/skybox/front.jpg",
-    //     "Textures/skybox/back.jpg"
-    // };
-    // skybox = new Skybox(faces);
+    std::vector<std::string> faces = {
+         TEXTUREDIR"skybox/right.jpg",
+         TEXTUREDIR"skybox/left.jpg",
+         TEXTUREDIR"skybox/top.jpg",
+         TEXTUREDIR"skybox/bottom.jpg",
+         TEXTUREDIR"skybox/front.jpg",
+         TEXTUREDIR"skybox/back.jpg"
+    };
+    skybox = new Skybox(faces);
 
     // ========================================
     // 创建水面（暂时注释，等其他对象就绪后再启用）
     // ========================================
     std::cout << "\n[5/5] 创建水面..." << std::endl;
     std::cout << "  (暂时跳过 - 等地形和天空盒就绪)" << std::endl;
-    // water = new WaterPlane(0.0f, 100.0f, 100);
+    water = new WaterPlane(0.0f, 1000.0f, 100);
 
     // 初始化成功
     init = true;
@@ -120,6 +126,9 @@ Renderer::~Renderer() {
     if (terrainShader) delete terrainShader;
     if (skyboxShader) delete skyboxShader;
     if (waterShader) delete waterShader;
+
+    // 清理纹理
+    if (terrainTexture) delete terrainTexture;
 
     std::cout << "Renderer destroyed" << std::endl;
 }
@@ -236,19 +245,25 @@ void Renderer::RenderTerrain() {
                                                (float)width / (float)height,
                                                camera->Zoom);
 
-    glUniformMatrix4fv(glGetUniformLocation(terrainShader->GetProgram(), "modelMatrix"),
+    glUniformMatrix4fv(glGetUniformLocation(terrainShader->GetProgram(), "model"),
                        1, false, (float*)&modelMatrix);
-    glUniformMatrix4fv(glGetUniformLocation(terrainShader->GetProgram(), "viewMatrix"),
+    glUniformMatrix4fv(glGetUniformLocation(terrainShader->GetProgram(), "view"),
                        1, false, (float*)&viewMatrix);
-    glUniformMatrix4fv(glGetUniformLocation(terrainShader->GetProgram(), "projMatrix"),
+    glUniformMatrix4fv(glGetUniformLocation(terrainShader->GetProgram(), "projection"),
                        1, false, (float*)&projMatrix);
 
     // 设置光照
     SetShaderLight(terrainShader);
 
     // 设置相机位置（用于高光计算）
-    glUniform3fv(glGetUniformLocation(terrainShader->GetProgram(), "cameraPos"),
+    glUniform3fv(glGetUniformLocation(terrainShader->GetProgram(), "viewPos"),
                  1, (float*)&camera->Position);
+
+    // 绑定地形纹理
+    if (terrainTexture) {
+        terrainTexture->Bind(0);  // 绑定到纹理单元0
+        glUniform1i(glGetUniformLocation(terrainShader->GetProgram(), "terrainTexture"), 0);
+    }
 
     // 渲染地形
     terrain->Render();
@@ -267,11 +282,11 @@ void Renderer::RenderWater() {
                                                (float)width / (float)height,
                                                camera->Zoom);
 
-    glUniformMatrix4fv(glGetUniformLocation(waterShader->GetProgram(), "modelMatrix"),
+    glUniformMatrix4fv(glGetUniformLocation(waterShader->GetProgram(), "model"),
                        1, false, (float*)&modelMatrix);
-    glUniformMatrix4fv(glGetUniformLocation(waterShader->GetProgram(), "viewMatrix"),
+    glUniformMatrix4fv(glGetUniformLocation(waterShader->GetProgram(), "view"),
                        1, false, (float*)&viewMatrix);
-    glUniformMatrix4fv(glGetUniformLocation(waterShader->GetProgram(), "projMatrix"),
+    glUniformMatrix4fv(glGetUniformLocation(waterShader->GetProgram(), "projection"),
                        1, false, (float*)&projMatrix);
 
     // 设置时间（用于波浪动画）
@@ -281,7 +296,7 @@ void Renderer::RenderWater() {
     glUniform1f(glGetUniformLocation(waterShader->GetProgram(), "time"), time);
 
     // 设置相机位置
-    glUniform3fv(glGetUniformLocation(waterShader->GetProgram(), "cameraPos"),
+    glUniform3fv(glGetUniformLocation(waterShader->GetProgram(), "viewPos"),
                  1, (float*)&camera->Position);
 
     // 如果有天空盒，绑定它用于反射
@@ -301,6 +316,9 @@ void Renderer::SetShaderLight(Shader* s) {
     // 设置光照 uniform
     glUniform3fv(glGetUniformLocation(s->GetProgram(), "lightPos"),
                  1, (float*)&lightPosition);
-    glUniform4fv(glGetUniformLocation(s->GetProgram(), "lightColor"),
-                 1, (float*)&lightColor);
+
+    // 将 Vector4 转换为 Vector3（只传RGB，忽略alpha）
+    Vector3 lightColorRGB(lightColor.x, lightColor.y, lightColor.z);
+    glUniform3fv(glGetUniformLocation(s->GetProgram(), "lightColor"),
+                 1, (float*)&lightColorRGB);
 }

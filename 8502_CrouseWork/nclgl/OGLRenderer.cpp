@@ -1,4 +1,4 @@
-/*
+﻿/*
 Class:OGLRenderer
 Author:Rich Davison	 <richard-gordon.davison@newcastle.ac.uk>
 Description:Abstract base class for the graphics tutorials. Creates an OpenGL 
@@ -19,12 +19,12 @@ _-_-_-_-_-_-_-""  ""
 using std::string;
 
 
-
+// 定义一个 4x4 偏移矩阵（bias），通常用于将 NDC [-1,1] 映射到纹理空间 [0,1]
 static const float biasValues[16] = {
-	0.5, 0.0, 0.0, 0.0,
+	0.5, 0.0, 0.0, 0.0, // 第一行：x 缩放为 0.5
 	0.0, 0.5, 0.0, 0.0,
 	0.0, 0.0, 0.5, 0.0,
-	0.5, 0.5, 0.5, 1.0
+	0.5, 0.5, 0.5, 1.0 // 第四行：平移 (0.5,0.5,0.5) 将范围从 [-1,1] 推到 [0,1]
 };
 static const Matrix4 biasMatrix(biasValues);
 
@@ -33,19 +33,19 @@ Creates an OpenGL 3.2 CORE PROFILE rendering context. Sets itself
 as the current renderer of the passed 'parent' Window. Not the best
 way to do it - but it kept the Tutorial code down to a minimum!
 */
-OGLRenderer::OGLRenderer(Window &window)	{
-	init					= false;
-	HWND windowHandle = window.GetHandle();
+OGLRenderer::OGLRenderer(Window &window)	{ // 构造函数，接收窗口引用
+	init					= false;// 初始化标记，构造完成后再设置为 true（发生错误则为 false）
+	HWND windowHandle = window.GetHandle(); // 获取 Win32 窗口句柄
 
 	// Did We Get A Device Context?
-	if (!(deviceContext=GetDC(windowHandle)))		{					
+	if (!(deviceContext=GetDC(windowHandle)))		{// 获取设备上下文（DC），失败则退出构造					 
 		std::cout << "OGLRenderer::OGLRenderer(): Failed to create window!\n";
 		return;
 	}
 	
 	//A pixel format descriptor is a struct that tells the Windows OS what type of front / back buffers we want to create etc
-	PIXELFORMATDESCRIPTOR pfd;
-	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+	PIXELFORMATDESCRIPTOR pfd; // 定义像素格式描述符结构体
+	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR)); // 将结构体清零，保证字段初始为 0
 
 	pfd.nSize			= sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.nVersion		= 1; 
@@ -56,7 +56,7 @@ OGLRenderer::OGLRenderer(Window &window)	{
 	pfd.cStencilBits	= 8;				//plus an 8 bit stencil buffer
    	pfd.iLayerType		= PFD_MAIN_PLANE;
 
-	GLuint		PixelFormat;
+	GLuint		PixelFormat;  // 用于保存选择到的像素格式索引
 	if (!(PixelFormat=ChoosePixelFormat(deviceContext,&pfd)))		{	// Did Windows Find A Matching Pixel Format for our PFD?
 		std::cout << "OGLRenderer::OGLRenderer(): Failed to choose a pixel format!\n";
 		return;
@@ -119,6 +119,7 @@ OGLRenderer::OGLRenderer(Window &window)	{
 	//Everywhere else in the Renderers, we use function pointers provided by GLEW...but we can't initialise GLEW yet! So we have to use the 'Wiggle' API
 	//to get a pointer to the function that will create our OpenGL 3.2 context...
 	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC) wglGetProcAddress("wglCreateContextAttribsARB");
+	// 获取扩展函数指针，用于创建指定版本的上下文（Windows 特有）
 	renderContext = wglCreateContextAttribsARB(deviceContext,0, attribs);
 
 	// Check for the context, and try to make it the current rendering context
@@ -138,7 +139,7 @@ OGLRenderer::OGLRenderer(Window &window)	{
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 #endif
 
-	glClearColor(0.2f,0.2f,0.2f,1.0f);			//When we clear the screen, we want it to be dark grey
+	glClearColor(0.2f,0.2f,0.2f,1.0f);			 // 设置默认清屏颜色为深灰色
 
 	currentShader = 0;							//0 is the 'null' object name for shader programs...
 
@@ -191,8 +192,8 @@ STUDENTS: Don't put your entity update routine in this, or anything like
 that - it's just asking for trouble! Strictly speaking, even the camera
 shouldn't be in here...(I'm lazy)
 */
-void OGLRenderer::UpdateScene(float msec)	{
-
+void OGLRenderer::UpdateScene(float msec) {
+	// 空实现：子类可重载此方法以进行基于时间的更新（msec 为毫秒）
 }
 
 /*
@@ -202,19 +203,24 @@ projMatrix, and textureMatrix. Updates them with the relevant
 matrix data. Sanity checks currentShader, so is always safe to
 call.
 */
-void OGLRenderer::UpdateShaderMatrices()	{
-	if(currentShader) {
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix")   ,	1,false, modelMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "viewMatrix")    ,	1,false, viewMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "projMatrix")    ,	1,false, projMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix") , 1,false, textureMatrix.values);
-		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix")  , 1,false, shadowMatrix.values);
+void OGLRenderer::UpdateShaderMatrices() {
+	if (currentShader) { // 仅当有绑定的 shader 时才更新 uniform
+		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, modelMatrix.values);
+		// 将 modelMatrix 传给着色器中的 "modelMatrix" uniform（列主序或行主序根据 Matrix4 实现）
+		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "viewMatrix"), 1, false, viewMatrix.values);
+		// 将 viewMatrix 传给 "viewMatrix"
+		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "projMatrix"), 1, false, projMatrix.values);
+		// 将 projMatrix 传给 "projMatrix"
+		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, textureMatrix.values);
+		// 将 textureMatrix 传给 "textureMatrix"
+		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "shadowMatrix"), 1, false, shadowMatrix.values);
+		// 将 shadowMatrix（通常为 bias * lightProj * lightView * model）传给 "shadowMatrix"
 	}
 }
 
 void OGLRenderer::BindShader(Shader*s) {
-	currentShader = s;
-	glUseProgram(s->GetProgram());
+	currentShader = s; // 记录当前着色器对象指针
+	glUseProgram(s->GetProgram()); // 激活对应的着色器程序（绑定到管线）
 }
 
 #ifdef OPENGL_DEBUGGING

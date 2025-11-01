@@ -1,4 +1,4 @@
-/*
+﻿/*
  * CSC8502 Coursework - Graphics Demo
  * 使用 nclgl 框架实现的实时渲染场景
  *
@@ -23,6 +23,9 @@ const int WINDOW_HEIGHT = 720;
  * 主函数
  */
 int main() {
+    // 设置控制台输出为 UTF-8
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
     std::cout << "========================================" << std::endl;
     std::cout << "CSC8502 Coursework - Graphics Demo" << std::endl;
     std::cout << "========================================\n" << std::endl;

@@ -242,6 +242,12 @@ void WaterPlane::SetupMesh()
 // ========================================
 void WaterPlane::Render()
 {
+    // 安全检查：确保VAO已经创建
+    if (m_VAO == 0) {
+        std::cerr << "错误：水面VAO未初始化，无法渲染！" << std::endl;
+        return;
+    }
+
     // 绑定VAO（恢复顶点属性配置）
     glBindVertexArray(m_VAO);
 

@@ -5,6 +5,7 @@
 #include "Terrain.h"
 #include "Skybox.h"
 #include "WaterPlane.h"
+#include "Texture.h"
 
 /*
  * Renderer - 主渲染器类
@@ -39,6 +40,9 @@ private:
     Shader* terrainShader;
     Shader* skyboxShader;
     Shader* waterShader;
+
+    // 纹理
+    Texture* terrainTexture;
 
     // 光照参数
     Vector3 lightPosition;

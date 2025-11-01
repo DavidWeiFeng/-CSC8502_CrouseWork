@@ -1,11 +1,12 @@
 #include "Terrain.h"
 #include <iostream>
 #include <algorithm>
+#include <windows.h>  // GetCurrentDirectoryA
 
 // ========================================
-// SOIL - 图像加载库
+// STB - 图像加载库
 // ========================================
-#include "SOIL/SOIL.h"
+#include "stb_image.h"
 
 // ========================================
 // 构造函数 - 创建地形对象
@@ -99,24 +100,51 @@ Terrain::~Terrain()
 bool Terrain::LoadHeightmap(const std::string& path)
 {
     // ========================================
-    // 使用 SOIL 加载图像
+    // 打印调试信息
+    // ========================================
+    char currentDir[MAX_PATH];
+    GetCurrentDirectoryA(MAX_PATH, currentDir);
+    std::cout << "  当前工作目录: " << currentDir << std::endl;
+    std::cout << "  尝试加载高度图: " << path << std::endl;
+
+    // ========================================
+    // 使用 STB 加载图像
     // ========================================
     // 参数：
     //   path.c_str()  - 文件路径（C风格字符串）
     //   &m_Width      - 输出：图像宽度
     //   &m_Height     - 输出：图像高度
     //   &channels     - 输出：颜色通道数（1=灰度，3=RGB，4=RGBA）
-    //   1             - 我们要求：强制转为1通道（灰度图）
+    //   0             - 自动检测通道数（而不是强制转换）
     // ========================================
     int channels;
-    unsigned char* data = SOIL_load_image(path.c_str(), &m_Width, &m_Height, &channels, 1);
+    unsigned char* data = stbi_load(path.c_str(), &m_Width, &m_Height, &channels, 0);
 
     // 检查是否加载成功
     if (!data)
     {
         std::cerr << "错误：无法加载图像 " << path << std::endl;
-        return false;
+        std::cerr << "STB错误信息: " << stbi_failure_reason() << std::endl;
+
+        // 尝试使用绝对路径
+        char absPath[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, absPath);
+        std::string fullPath = std::string(absPath) + "\\" + path;
+        std::cout << "  尝试使用绝对路径: " << fullPath << std::endl;
+        data = stbi_load(fullPath.c_str(), &m_Width, &m_Height, &channels, 0);
+
+        if (!data) {
+            std::cerr << "  绝对路径也失败: " << stbi_failure_reason() << std::endl;
+            return false;
+        }
+        std::cout << "  ✓ 使用绝对路径加载成功！" << std::endl;
     }
+
+    // ========================================
+    // 打印图像信息
+    // ========================================
+    std::cout << "  图像信息: " << m_Width << "x" << m_Height
+              << ", 通道数: " << channels << std::endl;
 
     // ========================================
     // 将图像数据转换为高度值
@@ -129,12 +157,27 @@ bool Terrain::LoadHeightmap(const std::string& path)
         for (int x = 0; x < m_Width; ++x)       // 遍历每一列（X轴）
         {
             // 计算像素在一维数组中的索引
-            // 公式：index = z * width + x
-            int index = z * m_Width + x;
+            int pixelIndex = (z * m_Width + x) * channels;  // 考虑通道数
+            int heightIndex = z * m_Width + x;
+
+            // 根据通道数提取亮度值
+            unsigned char brightness;
+            if (channels == 1) {
+                // 灰度图，直接使用
+                brightness = data[pixelIndex];
+            }
+            else if (channels == 3 || channels == 4) {
+                // RGB/RGBA，取平均值作为亮度
+                brightness = static_cast<unsigned char>(
+                    (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3
+                );
+            }
+            else {
+                brightness = 0;
+            }
 
             // 将像素值（0-255）归一化到 0.0-1.0 范围
-            // 除以255.0f得到0到1之间的浮点数
-            m_HeightData[index] = static_cast<float>(data[index]) / 255.0f;
+            m_HeightData[heightIndex] = static_cast<float>(brightness) / 255.0f;
         }
     }
 
@@ -142,7 +185,7 @@ bool Terrain::LoadHeightmap(const std::string& path)
     // 释放图像数据内存
     // ========================================
     // SOIL 分配的内存需要用 SOIL_free_image_data 释放
-    SOIL_free_image_data(data);
+    stbi_image_free(data);
 
     return true;
 }
@@ -480,6 +523,14 @@ void Terrain::SetupMesh()
 // ========================================
 void Terrain::Render()
 {
+    // ========================================
+    // 安全检查：确保VAO已经创建
+    // ========================================
+    if (m_VAO == 0) {
+        std::cerr << "错误：地形VAO未初始化，无法渲染！" << std::endl;
+        return;
+    }
+
     // 绑定VAO
     // 这会恢复我们之前配置的所有顶点属性
     glBindVertexArray(m_VAO);

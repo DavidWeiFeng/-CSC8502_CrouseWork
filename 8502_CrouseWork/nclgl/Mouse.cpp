@@ -1,5 +1,8 @@
-#include "Mouse.h"
+﻿#include "Mouse.h"
+
+// 构造函数：初始化鼠标状态并注册原始输入（Raw Input）设备
 Mouse::Mouse(HWND &hwnd)	{
+	// 将所有按钮相关状态清零
 	ZeroMemory( buttons,	 sizeof(bool) * MOUSE_MAX );
 	ZeroMemory( holdButtons, sizeof(bool) * MOUSE_MAX );
 
@@ -19,20 +22,25 @@ Mouse::Mouse(HWND &hwnd)	{
 
 	setAbsolute = false;
 }
-
+// 主更新函数：处理每帧从系统接收的鼠标原始输入数据
 void Mouse::Update(RAWINPUT* raw)	{
-	if (isAwake) {
+	if (isAwake) {// 只有“唤醒”状态下才响应鼠标事件
+		// 判断输入是否来自虚拟桌面（多屏情况下）
 		bool virtualDesktop = (raw->data.mouse.usFlags & MOUSE_VIRTUAL_DESKTOP) > 0;
+		// 判断鼠标是否报告绝对坐标（如触控板
 		bool isAbsolute		= (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) > 0;
 
 		if (isAbsolute) {
+			// 计算屏幕宽高，用于将16位坐标范围(0~65535)映射到像素坐标
 			const int screenWidth  = GetSystemMetrics(virtualDesktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
 			const int screenHeight = GetSystemMetrics(virtualDesktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
-
+			// 记录上一帧的绝对位置
 			Vector2 prevAbsolute = absolutePosition;
+			// 将原始输入坐标映射到屏幕坐标系
 			absolutePosition.x = (raw->data.mouse.lLastX / (float)USHRT_MAX) * screenWidth;
 			absolutePosition.y = (raw->data.mouse.lLastY / (float)USHRT_MAX) * screenHeight;
 
+			// 若不是第一次（即已设置过绝对位置），计算相对位移
 			if (setAbsolute) {
 				relativePosition.x = (absolutePosition.x - prevAbsolute.x) * sensitivity;
 				relativePosition.y = (absolutePosition.y - prevAbsolute.y) * sensitivity;

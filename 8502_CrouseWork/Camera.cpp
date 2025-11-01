@@ -1,22 +1,22 @@
-#include "Camera.h"
+﻿#include "Camera.h"
 #include <cmath>
 
-// 辅助函数：角度转弧度
+// 辅助函数：角度转弧度（OpenGL 的三角函数都以弧度为单位）
 static inline float ToRadians(float degrees) {
     return degrees * 3.14159265358979323846f / 180.0f;
 }
 
 // 构造函数：使用向量
 Camera::Camera(Vector3 position, Vector3 up, float yaw, float pitch)
-    : Front(Vector3(0.0f, 0.0f, -1.0f)),
-      MovementSpeed(SPEED),
-      MouseSensitivity(SENSITIVITY),
-      Zoom(ZOOM)
+    : Front(Vector3(0.0f, 0.0f, -1.0f)),  // 初始朝向为 -Z（OpenGL 默认前方向）
+      MovementSpeed(SPEED), // 初始化相机移动速度常量
+      MouseSensitivity(SENSITIVITY), 
+      Zoom(ZOOM) // 初始化视野角度（FOV）
 {
     Position = position;
     WorldUp = up;
-    Yaw = yaw;
-    Pitch = pitch;
+    Yaw = yaw; // 初始化偏航角（水平旋转角）
+    Pitch = pitch; // 初始化俯仰角（垂直旋转角）
     UpdateCameraVectors();
 }
 
@@ -39,7 +39,8 @@ Camera::Camera(float posX, float posY, float posZ,
 // 获取视图矩阵
 Matrix4 Camera::GetViewMatrix() const
 {
-    // BuildViewMatrix: 相机位置，目标位置（位置+前方向），上方向
+    // 视图矩阵 = LookAt(相机位置, 目标位置, 上方向)
+     // 目标位置 = 相机位置 + 前向量
     return Matrix4::BuildViewMatrix(Position, Position + Front, Up);
 }
 

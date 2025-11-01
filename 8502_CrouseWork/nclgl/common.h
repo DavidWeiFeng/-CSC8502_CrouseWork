@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
 Author:Rich Davison
 Description: Some random variables and functions, for lack of a better place 
 to put them.
@@ -37,7 +37,7 @@ static inline float DegToRad(const float rad)	{
 	return rad * PI / 180.0f;
 };
 
-#define SHADERDIR	"../Shaders/"
-#define MESHDIR		"../Meshes/"
-#define TEXTUREDIR  "../Textures/"
-#define SOUNDSDIR	"../Sounds/"
+#define SHADERDIR	"Shaders/"
+#define MESHDIR		"Meshes/"
+#define TEXTUREDIR  "Textures/"
+#define SOUNDSDIR	"Sounds/"

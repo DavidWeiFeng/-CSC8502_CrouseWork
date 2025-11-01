@@ -1,4 +1,4 @@
-/* stbi-1.16 - public domain JPEG/PNG reader
+﻿    /* stbi-1.16 - public domain JPEG/PNG reader
 
    QUICK NOTES:
       JPEG baseline (no JPEG progressive, no oddball channel decimations)
